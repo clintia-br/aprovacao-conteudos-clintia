@@ -1,0 +1,281 @@
+{
+  "cliente": "Gabriela Kaufman",
+  "titulo": "Estruturação do perfil",
+  "whatsappAgencia": "",
+  "perfil": {
+    "usuario": "psigabrielakaufman",
+    "nome": "Gabriela Kaufman | Psicóloga e Psicanalista",
+    "bio": [
+      "Um espaço para se sentir ouvida",
+      "Presencial em SP ou Online",
+      "CRP 06/176007"
+    ],
+    "link": "linktr.ee/psigabrielakaufman",
+    "rodape": "Gabriela Kaufman, psicóloga. CRP 06/176007",
+    "avatar": "avatar",
+    "stats": {
+      "posts": 21,
+      "seguidores": "97",
+      "seguindo": "123"
+    }
+  },
+  "publicados": [
+    "old1",
+    "old2",
+    "old3",
+    "old4",
+    "old5",
+    "old6",
+    "old7",
+    "old8",
+    "old9"
+  ],
+  "itens": [
+    {
+      "id": "bio",
+      "grupo": "perfil",
+      "tipo": "bio",
+      "num": "",
+      "titulo": "Nova bio do perfil",
+      "legenda": null
+    },
+    {
+      "id": "d1",
+      "grupo": "perfil",
+      "tipo": "destaque",
+      "titulo": "Destaque: Quem sou",
+      "capa": "c_quem",
+      "rotulo": "Quem sou",
+      "imgs": [
+        "s_quem_1",
+        "s_quem_2",
+        "s_quem_3",
+        "s_quem_4",
+        "s_quem_5"
+      ],
+      "legenda": null
+    },
+    {
+      "id": "d2",
+      "grupo": "perfil",
+      "tipo": "destaque",
+      "titulo": "Destaque: Minha atuação",
+      "capa": "c_atuacao",
+      "rotulo": "Atuação",
+      "imgs": [
+        "s_atuacao_1",
+        "s_atuacao_2",
+        "s_atuacao_3",
+        "s_atuacao_4",
+        "s_atuacao_5",
+        "s_atuacao_6"
+      ],
+      "legenda": null
+    },
+    {
+      "id": "d3",
+      "grupo": "perfil",
+      "tipo": "destaque",
+      "titulo": "Destaque: Contato",
+      "capa": "c_contato",
+      "rotulo": "Contato",
+      "imgs": [
+        "s_contato_1",
+        "s_contato_2",
+        "s_contato_3"
+      ],
+      "legenda": null
+    },
+    {
+      "id": "d4",
+      "grupo": "perfil",
+      "tipo": "destaque",
+      "titulo": "Destaque: Ansiedade",
+      "capa": "c_ansiedade",
+      "rotulo": "Ansiedade",
+      "imgs": [
+        "s_ansiedade_1",
+        "s_ansiedade_2",
+        "s_ansiedade_3",
+        "s_ansiedade_4",
+        "s_ansiedade_5"
+      ],
+      "legenda": null
+    },
+    {
+      "id": "d5",
+      "grupo": "perfil",
+      "tipo": "destaque",
+      "titulo": "Destaque: Depressão",
+      "capa": "c_depressao",
+      "rotulo": "Depressão",
+      "imgs": [
+        "s_depressao_1",
+        "s_depressao_2",
+        "s_depressao_3",
+        "s_depressao_4"
+      ],
+      "legenda": null
+    },
+    {
+      "id": "p1",
+      "grupo": "feed",
+      "num": "01",
+      "fixado": true,
+      "tipo": "carrossel",
+      "titulo": "Quem sou eu",
+      "imgs": [
+        "p1",
+        "p1_2",
+        "p1_3",
+        "p1_4",
+        "p1_5",
+        "p1_6"
+      ],
+      "legenda": null
+    },
+    {
+      "id": "p2",
+      "grupo": "feed",
+      "num": "02",
+      "fixado": true,
+      "tipo": "imagem",
+      "titulo": "Eu não quero te ensinar a viver",
+      "imgs": [
+        "p2"
+      ],
+      "legenda": "Eu não trabalho com fórmulas para uma vida ideal.\n\nMeu trabalho é outro.\n\nÉ escutar o que você traz, investigar as questões que aparecem e, ao longo do processo, ajudar você a compreender melhor a própria história.\n\nPorque nem sempre o que precisamos é de mais uma resposta.\n\nÀs vezes, precisamos de espaço para formular a pergunta."
+    },
+    {
+      "id": "p3",
+      "grupo": "feed",
+      "num": "03",
+      "tipo": "carrossel",
+      "titulo": "Por que eu escolhi a psicanálise?",
+      "imgs": [
+        "p3",
+        "p3_2",
+        "p3_3",
+        "p3_4",
+        "p3_5",
+        "p3_6"
+      ],
+      "legenda": "Eu escolhi a psicanálise porque acredito na importância de não reduzir uma pessoa àquilo que está acontecendo com ela naquele momento.\n\nUma ansiedade pode ter uma história.\nUma repetição pode ter um sentido.\nUma escolha pode envolver conflitos que vão muito além da escolha em si.\n\nNa clínica, meu trabalho é escutar essas questões e investigar, junto com cada paciente, o que aparece a partir delas.\n\nÉ por isso que a psicanálise está no centro da minha prática."
+    },
+    {
+      "id": "p4",
+      "grupo": "feed",
+      "num": "04",
+      "tipo": "carrossel",
+      "titulo": "“Eu me adapto.”",
+      "imgs": [
+        "p4",
+        "p4_2",
+        "p4_3",
+        "p4_4",
+        "p4_5",
+        "p4_6"
+      ],
+      "legenda": "Ser uma pessoa adaptável pode ser uma qualidade.\n\nO ponto é quando a adaptação deixa de ser uma escolha e passa a ser a única forma que você encontra para estar nas relações.\n\nSe você se reconhece nisso, não precisa chegar ao atendimento sabendo explicar por quê.\n\nEssa investigação pode começar justamente por aquilo que você já percebeu.\n\nAtendimentos presenciais em São Paulo e online.\nPara informações e agendamento:\nWhatsApp | 11 99480-8766"
+    },
+    {
+      "id": "p5",
+      "grupo": "feed",
+      "num": "05",
+      "tipo": "imagem",
+      "titulo": "Você não precisa estar no limite",
+      "imgs": [
+        "p5"
+      ],
+      "legenda": "Tem uma coisa que eu percebo muito: a gente costuma achar que só pode parar quando a situação já ficou insustentável.\n\nEnquanto ainda estamos trabalhando, estudando, respondendo todo mundo, cuidando da casa, mantendo os compromissos e fazendo o que precisa ser feito, parece que está tudo bem.\n\n“Eu tô cansada, mas tô dando conta.”\n\nSó que dar conta não é a mesma coisa que estar bem.\n\nE talvez uma das coisas mais difíceis seja justamente perceber isso antes de precisar chegar ao limite.\n\nSe você quer conversar sobre o que tem acontecido e conhecer meu trabalho, me chama pelo WhatsApp para informações sobre os atendimentos."
+    },
+    {
+      "id": "p6",
+      "grupo": "feed",
+      "num": "06",
+      "tipo": "imagem",
+      "titulo": "Você não está cansada de fazer tudo",
+      "imgs": [
+        "p6"
+      ],
+      "legenda": "Porque não é só sobre a quantidade de coisas.\n\nÉ sobre estar sempre pensando no que falta.\nNo que pode dar errado.\nNo que alguém vai precisar.\nNo que você esqueceu.\nNo que ainda precisa resolver.\n\nMesmo quando ninguém pediu.\n\nVocê pode estar sentada no sofá e, ainda assim, continuar responsável por tudo dentro da sua cabeça.\n\nE quando alguém pergunta:\n\n“Mas por que você não descansa?”\n\nA resposta nem sempre é tão simples.\n\nTalvez valha a pena entender por que é tão difícil deixar alguma coisa nas mãos de outra pessoa.\n\nÉ esse tipo de questão que também pode ser trabalhada em análise.\n\nSe você quer conhecer meu trabalho e entender sobre os atendimentos, me chama pelo WhatsApp."
+    },
+    {
+      "id": "p7",
+      "grupo": "feed",
+      "num": "07",
+      "tipo": "reels",
+      "titulo": "Reels: “Eu só quero ter certeza”",
+      "roteiro": "“Eu só quero ter certeza.\n\nTenho que ter certeza antes de terminar.\nAntes de mudar de faculdade.\nAntes de aceitar o emprego.\nAntes de dizer não.\nAntes de escolher.\n\nSó que existe uma coisa que eu percebo bastante:\n\nàs vezes, a pessoa não está procurando informação.\nEla está procurando a garantia de que não vai se arrepender.\n\nE essa garantia não existe.\n\nNenhuma escolha importante vem com certificado de que você nunca vai questioná-la depois.\n\nEntão talvez a pergunta não seja:\n\n‘Como eu posso ter certeza?’\n\nMas:\n\n‘O que torna tão difícil escolher sem ter certeza?’\n\nEssa é uma pergunta que pode ser muito mais interessante.\n\nEu sou Gabriela Kaufman, psicóloga e psicanalista.\nE é sobre questões como essa que eu trabalho na clínica.\n\nSe você quer conhecer meu trabalho, me chama.”",
+      "legenda": "A necessidade de certeza pode parecer racional.\n\nPesquisar mais.\nPerguntar para mais alguém.\nPensar mais um pouco.\n\nAté que pensar deixa de ajudar e começa a adiar a decisão.\n\nNa análise, podemos investigar o que existe nessa necessidade de certeza e por que algumas escolhas se tornam tão difíceis de sustentar.\n\nSe você vive esse tipo de conflito e quer conhecer meu trabalho, me chama no WhatsApp: 11 99480-8766."
+    },
+    {
+      "id": "p8",
+      "grupo": "feed",
+      "num": "08",
+      "tipo": "carrossel",
+      "titulo": "Por que você precisa de um bom motivo?",
+      "imgs": [
+        "p8",
+        "p8_2",
+        "p8_3",
+        "p8_4",
+        "p8_5",
+        "p8_6"
+      ],
+      "legenda": "Ao longo desses conteúdos, eu trouxe algumas situações que aparecem com frequência quando falamos de escolhas, expectativas, relações, culpa e autonomia.\n\nTalvez você tenha se reconhecido em algumas.\n\nTalvez tenha discordado de outras.\n\nO objetivo não é oferecer uma resposta pronta para cada situação.\n\nÉ abrir espaço para perguntas que, muitas vezes, ficam difíceis de formular sozinha.\n\nSe você quer conhecer meu trabalho e entender se a análise pode fazer sentido para o momento que está vivendo, entre em contato pelo link na bio."
+    },
+    {
+      "id": "p9",
+      "grupo": "feed",
+      "num": "09",
+      "tipo": "reels",
+      "titulo": "Reels: “Mas eu não tenho motivo”",
+      "roteiro": "“Tem uma frase que eu escuto muito:\n\n‘Mas eu não tenho motivo para estar assim.’\n\nA pessoa trabalha, tem família, tem amigos, às vezes está em um relacionamento, está fazendo a vida acontecer...\n\nE mesmo assim não está bem.\n\nE aí vem a culpa.\n\nPorque parece que, se a vida está funcionando, você não tem direito de estar sofrendo.\n\nMas sofrimento psíquico não funciona como uma planilha.\n\nNão é porque você consegue cumprir suas obrigações que está tudo bem por dentro.\n\nE talvez a pergunta não seja:\n\n‘Mas o que eu tenho para reclamar?’\n\nTalvez seja:\n\n‘O que está acontecendo comigo?’\n\nEu sou Gabriela Kaufman, psicóloga e psicanalista.\nE é sobre questões como essa que eu trabalho na clínica.\n\nSe você quer conhecer meu trabalho, me chama no direct e vamos conversar.”",
+      "legenda": "Você não precisa montar uma defesa para justificar aquilo que está sentindo.\n\nE também não precisa esperar a vida desmoronar para começar a olhar para alguma coisa que já está difícil.\n\nÀs vezes, por fora, está tudo funcionando.\n\nE é justamente isso que torna mais difícil explicar o que está acontecendo.\n\nSe você tem vivido algo assim e quer conhecer meu trabalho, vamos conversar."
+    },
+    {
+      "id": "p10",
+      "grupo": "feed",
+      "num": "10",
+      "tipo": "imagem",
+      "titulo": "Você diz “eu consigo” tão rápido",
+      "imgs": [
+        "p10"
+      ],
+      "legenda": "“Deixa que eu faço.”\n\n“Eu resolvo.”\n\n“Não precisa se preocupar.”\n\n“Tá tudo bem.”\n\nE pronto. Mais uma coisa que você colocou nas costas.\n\nÀs vezes, a independência é uma escolha.\n\nÀs vezes, ela também é uma maneira que encontramos de não depender de ninguém, não incomodar ninguém e não correr o risco de nos decepcionamos.\n\nNão estou dizendo que você precisa aprender a depender dos outros.\n\nMas talvez valha a pena entender o que pedir ajuda significa para você.\n\nSe essa é uma questão que você gostaria de compreender melhor, meu trabalho pode ser um espaço para isso. Me chama pelo WhatsApp para informações sobre os atendimentos."
+    },
+    {
+      "id": "p11",
+      "grupo": "feed",
+      "num": "11",
+      "tipo": "carrossel",
+      "titulo": "Ansiedade não é só pensar demais",
+      "imgs": [
+        "p11",
+        "p11_2",
+        "p11_3",
+        "p11_4",
+        "p11_5",
+        "p11_6"
+      ],
+      "legenda": "Eu não gosto muito quando a ansiedade é resumida a “pensar demais”.\n\nPorque, muitas vezes, existe uma lógica por trás desse pensamento.\n\nAntecipar.\nPrever.\nControlar.\nRevisar.\nConferir.\n\nComo se pensar em todas as possibilidades pudesse impedir que alguma coisa saísse do lugar.\n\nNa clínica, uma das coisas que podemos fazer é justamente olhar para essa lógica.\n\nSe você quer entender melhor o que está por trás da sua ansiedade, me chama pelo WhatsApp para conhecer meu trabalho e saber sobre os atendimentos."
+    },
+    {
+      "id": "p12",
+      "grupo": "feed",
+      "num": "12",
+      "tipo": "carrossel",
+      "titulo": "Você não precisa saber explicar tudo",
+      "imgs": [
+        "p12",
+        "p12_2",
+        "p12_3",
+        "p12_4",
+        "p12_5",
+        "p12_6"
+      ],
+      "legenda": "Você não precisa chegar na terapia com uma história organizada.\n\nNem com uma pergunta perfeita.\n\nNem sabendo exatamente qual é o problema.\n\nÀs vezes, você só sabe que não está conseguindo lidar com alguma coisa do jeito que gostaria.\n\nE pode começar daí.\n\nMeu trabalho é construído a partir da escuta psicanalítica, respeitando a história e as questões de cada pessoa.\n\nSe você quer saber como funciona o atendimento comigo, me chama pelo WhatsApp."
+    }
+  ]
+}

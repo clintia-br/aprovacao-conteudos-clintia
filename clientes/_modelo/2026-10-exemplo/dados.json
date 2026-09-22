@@ -1,0 +1,72 @@
+{
+  "cliente": "Nome do Cliente",
+  "titulo": "Conteúdo de outubro",
+  "whatsappAgencia": "",
+  "perfil": {
+    "usuario": "usuario_instagram",
+    "nome": "Nome que aparece no perfil",
+    "bio": [
+      "Linha 1 da bio",
+      "Linha 2",
+      "CRM/CRP/CRO se for profissional de saúde"
+    ],
+    "link": "link.da/bio",
+    "rodape": "Responsável técnico / registro profissional",
+    "avatar": "avatar",
+    "stats": {
+      "posts": 0,
+      "seguidores": "0",
+      "seguindo": "0"
+    }
+  },
+  "publicados": [],
+  "itens": [
+    {
+      "id": "p1",
+      "grupo": "feed",
+      "num": "01",
+      "tipo": "carrossel",
+      "titulo": "Título do carrossel",
+      "imgs": [
+        "p1",
+        "p1_2",
+        "p1_3"
+      ],
+      "legenda": "Legenda completa do post."
+    },
+    {
+      "id": "p2",
+      "grupo": "feed",
+      "num": "02",
+      "tipo": "imagem",
+      "titulo": "Título do post",
+      "imgs": [
+        "p2"
+      ],
+      "legenda": "Legenda."
+    },
+    {
+      "id": "p3",
+      "grupo": "feed",
+      "num": "03",
+      "tipo": "reels",
+      "titulo": "Reels: título",
+      "video": "p3.mp4",
+      "roteiro": "Se ainda não tiver vídeo, apague a linha \"video\" e deixe só o roteiro.",
+      "legenda": "Legenda do reels."
+    },
+    {
+      "id": "d1",
+      "grupo": "perfil",
+      "tipo": "destaque",
+      "titulo": "Destaque: Nome",
+      "rotulo": "Nome",
+      "capa": "c_nome",
+      "imgs": [
+        "s_nome_1",
+        "s_nome_2"
+      ],
+      "legenda": null
+    }
+  ]
+}
