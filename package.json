@@ -1,0 +1,13 @@
+{
+  "name": "aprovacao-clintia",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Páginas de aprovação de conteúdo por cliente (ClintIA)",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@libsql/client": "^0.14.0"
+  }
+}

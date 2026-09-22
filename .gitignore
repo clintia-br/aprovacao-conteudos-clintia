@@ -1,0 +1,6 @@
+node_modules
+public/c
+public/painel
+lib/ciclos.json
+.env*
+.vercel

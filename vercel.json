@@ -1,0 +1,17 @@
+{
+  "buildCommand": "node build.js",
+  "outputDirectory": "public",
+  "cleanUrls": true,
+  "functions": {
+    "api/painel.js": { "includeFiles": "lib/ciclos.json" }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+        { "key": "Referrer-Policy", "value": "no-referrer" }
+      ]
+    }
+  ]
+}
