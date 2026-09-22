@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel de aprovações | ClintIA</title>
+<link rel="icon" href="/assets/clintia-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--oxford:#051E32;--yale:#053C73;--dodger:#0578DC;--sky:#05D2FF;--ink:#051E32;--ink-2:#4A6177;--line:#D6E2EE;--card:#F5F9FD;--ok:#1F8A55;--fix:#C73B3B;--wait:#B57A0E;font-family:"Red Hat Display",system-ui,sans-serif;color:var(--ink);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:#fff}
+.stripe{display:flex;height:5px}.stripe i{display:block}
+header{max-width:1100px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+header img{height:28px}
+h1{font-weight:900;color:var(--dodger);text-transform:uppercase;font-size:24px;margin:0;flex:1}
+main{max-width:1100px;margin:0 auto;padding:0 20px 60px}
+.login{max-width:360px;margin:60px auto;display:grid;gap:10px}
+input,select{font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 16px;background:var(--dodger);color:#fff;cursor:pointer}
+button.sec{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.err{color:var(--fix);font-weight:600;min-height:1.2em;margin:0}
+.bar{display:flex;gap:10px;align-items:center;margin:8px 0 18px;flex-wrap:wrap}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{background:var(--card);font-weight:700;color:var(--ink-2);font-size:13px}
+tr:last-child td{border-bottom:0}
+.pg{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--line);width:140px;margin-top:5px}
+.pg i{display:block}.pg .o{background:var(--ok)}.pg .f{background:var(--fix)}
+.tag{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.t-ok{background:#1F8A5522;color:var(--ok)}.t-fix{background:#C73B3B1f;color:var(--fix)}.t-wait{background:#B57A0E22;color:var(--wait)}.t-new{background:var(--card);color:var(--ink-2)}
+small{color:var(--ink-2)}
+a{color:var(--dodger);font-weight:600}
+</style>
+</head>
+<body>
+<div class="stripe" aria-hidden="true"><i style="flex:4;background:#051E32"></i><i style="flex:8;background:#053C73"></i><i style="flex:18;background:#0578DC"></i><i style="flex:30;background:#055AAA"></i><i style="flex:40;background:#05D2FF"></i></div>
+<header><img src="/assets/clintia-logo.png" alt="ClintIA"><h1>Painel de aprovações</h1></header>
+<main id="app">
+  <form class="login" id="login">
+    <label for="pw">Senha do painel</label>
+    <input id="pw" type="password" autocomplete="current-password" required>
+    <button type="submit">Entrar</button>
+    <p class="err" id="err" role="alert"></p>
+  </form>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const quando = iso => iso ? new Date(iso).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) : "—";
+let senha = sessionStorage.getItem("painel-pw") || "";
+let dados = [];
+
+function situacao(c) {
+  if (!c.aprovados && !c.ajustes && !c.envios) return ["t-new", "Não aberto"];
+  if (c.aprovados === c.total) return ["t-ok", "Tudo aprovado"];
+  if (c.ajustes) return ["t-fix", `${c.ajustes} ajuste${c.ajustes > 1 ? "s" : ""}`];
+  return ["t-wait", "Em revisão"];
+}
+function render() {
+  const f = $("#filtro") ? $("#filtro").value : "todos";
+  const lista = dados.filter(c => f === "todos" || (f === "pendentes" && c.aprovados < c.total) || (f === "ajustes" && c.ajustes > 0));
+  $("#app").innerHTML = `
+    <div class="bar">
+      <select id="filtro" aria-label="Filtro">
+        <option value="todos">Todos os ciclos</option>
+        <option value="pendentes">Com pendência</option>
+        <option value="ajustes">Com ajuste pedido</option>
+      </select>
+      <button class="sec" id="rel">Atualizar</button>
+      <small>${dados.length} ciclo(s) publicados</small>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>Cliente</th><th>Ciclo</th><th>Progresso</th><th>Situação</th><th>Rodadas enviadas</th><th>Última atividade</th><th>Link</th></tr></thead>
+      <tbody>${lista.map(c => {
+        const [cls, txt] = situacao(c);
+        return `<tr>
+          <td><b>${esc(c.nome)}</b></td>
+          <td>${esc(c.titulo)}<br><small>${esc(c.ciclo)}</small></td>
+          <td>${c.aprovados}/${c.total} aprovados<div class="pg"><i class="o" style="width:${c.aprovados / c.total * 100}%"></i><i class="f" style="width:${c.ajustes / c.total * 100}%"></i></div></td>
+          <td><span class="tag ${cls}">${txt}</span></td>
+          <td>${c.envios}${c.envios ? `<br><small>${quando(c.ultimoEnvio)}</small>` : ""}</td>
+          <td>${quando(c.ultimaAcao)}</td>
+          <td><a href="${esc(c.link)}" target="_blank" rel="noopener">Abrir</a> · <a href="#" data-copy="${esc(location.origin + c.link)}">Copiar</a></td>
+        </tr>`;
+      }).join("") || `<tr><td colspan="7">Nenhum ciclo neste filtro.</td></tr>`}</tbody>
+    </table></div>`;
+  $("#filtro").value = f;
+  $("#filtro").onchange = render;
+  $("#rel").onclick = carregar;
+  document.querySelectorAll("[data-copy]").forEach(a => a.onclick = async e => {
+    e.preventDefault();
+    try { await navigator.clipboard.writeText(a.dataset.copy); a.textContent = "Copiado"; } catch (err) { prompt("Copie o link:", a.dataset.copy); }
+  });
+}
+async function carregar() {
+  const r = await fetch("/api/painel", { headers: { "x-admin-password": senha } });
+  if (r.status === 401) { sessionStorage.removeItem("painel-pw"); location.reload(); return; }
+  if (!r.ok) { $("#app").innerHTML = `<p class="err">Não foi possível carregar o painel. Tente de novo em instantes.</p>`; return; }
+  dados = (await r.json()).ciclos;
+  render();
+}
+$("#login").onsubmit = async e => {
+  e.preventDefault();
+  senha = $("#pw").value;
+  const r = await fetch("/api/painel", { headers: { "x-admin-password": senha } });
+  if (!r.ok) { $("#err").textContent = r.status === 401 ? "Senha incorreta." : "Erro ao conectar."; return; }
+  sessionStorage.setItem("painel-pw", senha);
+  dados = (await r.json()).ciclos;
+  render();
+};
+if (senha) carregar();
+</script>
+</body>
+</html>
