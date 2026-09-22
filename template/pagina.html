@@ -387,6 +387,8 @@ const BASE = (DATA.midia && DATA.midia.base) || `/c/${DATA.slug}/${DATA.ciclo}-$
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const src = k => /^https?:\/\//.test(k) ? k : BASE + (/\.\w{2,4}$/.test(k) ? k : k + ".jpg");
+// miniatura (360px) para grade, listas e destaques; o visualizador continua com a arte inteira
+const mini = k => (DATA.miniaturas && !/^https?:\/\//.test(k)) ? BASE + "_t/" + (/\.\w{2,4}$/.test(k) ? k : k + ".jpg") : src(k);
 const KEY = `aprov:${DATA.slug}:${DATA.ciclo}`;
 const AUTH = { cliente: DATA.slug, ciclo: DATA.ciclo, token: DATA.token };
 let dec = {}, envios = 0, online = false;
@@ -438,15 +440,16 @@ const ICO = {
   pin:'<svg class="ico pin" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15 3l6 6-3 1-4 4 1 5-2 2-4-4-5 5-1-1 5-5-4-4 2-2 5 1 4-4z"/></svg>'
 };
 const img = (k, cls = "", alt = "") => `<img src="${esc(src(k))}" class="${cls}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
+const imgT = (k, cls = "") => `<img src="${esc(mini(k))}" class="${cls}" alt="" loading="lazy" decoding="async">`;
 const byId = id => ITEMS.find(i => i.id === id);
 const label = it => it.grupo === "feed" ? `Post ${it.num}` : (it.tipo === "bio" ? "Bio" : "Destaque");
 
 function thumb(it) {
-  if (it.tipo === "reels" && it.capa) return img(it.capa);
+  if (it.tipo === "reels" && it.capa) return imgT(it.capa);
   if (it.tipo === "reels") return `<div class="reel-ph"><span>Reels</span><b>${esc(it.titulo.replace(/^Reels: /, ""))}</b></div>`;
-  if (it.tipo === "destaque") return img(it.capa, "round");
-  if (it.tipo === "bio") return img(CONFIG.avatar, "round");
-  return img(it.imgs[0]);
+  if (it.tipo === "destaque") return imgT(it.capa, "round");
+  if (it.tipo === "bio") return imgT(CONFIG.avatar, "round");
+  return imgT(it.imgs[0]);
 }
 
 /* ---------- perfil ---------- */
@@ -458,7 +461,7 @@ function renderStatic() {
   $("#ig-av").src = src(CONFIG.avatar);
   $("#ig-stats").innerHTML = `<div><b>${esc(CONFIG.stats.posts)}</b>posts</div><div><b>${esc(CONFIG.stats.seguidores)}</b>seguidores</div><div><b>${esc(CONFIG.stats.seguindo)}</b>seguindo</div>`;
   $("#ig-hl").innerHTML = ITEMS.filter(i => i.tipo === "destaque").map(it =>
-    `<button type="button" data-story="${it.id}"><span class="ring">${img(it.capa)}</span>${esc(it.rotulo)}</button>`).join("");
+    `<button type="button" data-story="${it.id}"><span class="ring">${imgT(it.capa)}</span>${esc(it.rotulo)}</button>`).join("");
   document.querySelectorAll("[data-story]").forEach(b => b.onclick = () => openStory(b.dataset.story));
 }
 
@@ -469,7 +472,7 @@ function renderLists() {
   const rest = feed.filter(i => !i.fixado).slice().reverse();
   const tiles = [...pinned, ...rest].map(it =>
     `<button class="tile" data-open="${it.id}" data-item="${it.id}">${thumb(it)}${it.fixado ? ICO.pin : (ICO[it.tipo] || "")}<span class="dot"></span></button>`);
-  const olds = OLD.map(k => `<div class="tile old" title="Já publicado">${img(k)}</div>`);
+  const olds = OLD.map(k => `<div class="tile old" title="Já publicado">${imgT(k)}</div>`);
   $("#grid").innerHTML = tiles.join("") + olds.join("");
 
   const row = it => {
@@ -558,7 +561,7 @@ function renderView() {
   $("#panel").innerHTML = `
     <div class="media">${mediaHTML(it)}</div>
     <div class="side">
-      <div class="side-h"><div class="av sm"><span>${img(CONFIG.avatar)}</span></div><b>${esc(CONFIG.usuario)}</b><span>${label(it)}, ${TIPO[it.tipo]}</span></div>
+      <div class="side-h"><div class="av sm"><span>${imgT(CONFIG.avatar)}</span></div><b>${esc(CONFIG.usuario)}</b><span>${label(it)}, ${TIPO[it.tipo]}</span></div>
       ${cap}
       <div class="decide">
         <div class="bt">
@@ -634,7 +637,7 @@ function showStory(i) {
   sIdx = i;
   $("#player").innerHTML = `
     <div class="segs">${ss.map((_, k) => `<span class="${k < i ? "done" : k === i ? "cur" : ""}"><i></i></span>`).join("")}</div>
-    <div class="ph"><div class="av sm"><span>${img(CONFIG.avatar)}</span></div>${esc(sItem.rotulo)}</div>
+    <div class="ph"><div class="av sm"><span>${imgT(CONFIG.avatar)}</span></div>${esc(sItem.rotulo)}</div>
     <div class="art-host">${img(ss[i], "", `${sItem.titulo}, story ${i + 1}`)}</div>
     <button class="tapl" aria-label="Story anterior"></button><button class="tapr" aria-label="Próximo story"></button>
     <button class="st-open" type="button">Aprovar ou pedir ajuste</button>`;
