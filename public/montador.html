@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Montador de aprovação | ClintIA</title>
+<link rel="icon" href="/assets/clintia-logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#05D2FF; --celtic:#055AAA; --dodger:#0578DC; --yale:#053C73; --oxford:#051E32;
+  --paper:#F2F7FC; --card:#FFFFFF; --ink:#051E32; --ink-2:#4A6177; --line:#D6E2EE;
+  --ok:#1F8A55; --fix:#C73B3B; --wait:#B57A0E; --accent:#0578DC;
+  --font:"Red Hat Display",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  box-sizing:border-box;
+}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.45}
+button{font:inherit;cursor:pointer}
+h1,h2,h3{font-weight:900;letter-spacing:-.01em}
+.stripe{display:flex;height:5px}
+.stripe i{display:block;height:100%}
+.top{background:var(--card);border-bottom:1px solid var(--line)}
+.top-in{max-width:1000px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.top img{height:28px}
+.top .sep{width:1px;height:26px;background:var(--line)}
+.top h1{font-size:19px;margin:0;color:var(--yale);text-transform:uppercase}
+.top small{display:block;color:var(--ink-2);font-weight:500;font-size:12px}
+.wrap{max-width:1000px;margin:0 auto;padding:24px 20px 120px}
+.intro{background:#EAF3FC;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:0 0 24px;color:var(--ink-2)}
+.intro b{color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:0 0 18px}
+.card>h2{font-size:16px;margin:0 0 4px;color:var(--yale);text-transform:uppercase}
+.card>.sub{margin:0 0 16px;color:var(--ink-2);font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media (max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
+label{display:block;font-size:13px;font-weight:700;margin:0 0 5px;color:var(--ink)}
+label .opt{font-weight:500;color:var(--ink-2)}
+input[type=text],input[type=number],textarea,select{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:15px;background:var(--card);color:var(--ink)}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+textarea{resize:vertical;min-height:80px}
+.hint{font-size:12px;color:var(--ink-2);margin:5px 0 0}
+.field{margin:0 0 14px}
+/* dropzone */
+.drop{border:2px dashed var(--line);border-radius:12px;padding:14px;text-align:center;color:var(--ink-2);background:#FAFCFE;transition:.15s;cursor:pointer}
+.drop.over{border-color:var(--accent);background:#EAF3FC;color:var(--accent)}
+.drop b{color:var(--accent)}
+.drop.mini{padding:10px;font-size:13px}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.thumb{position:relative;width:70px;height:88px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#eee;flex:none}
+.thumb.rd{border-radius:50%;width:70px;height:70px}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
+.thumb .del{position:absolute;top:2px;right:2px;width:20px;height:20px;border:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:1;display:grid;place-items:center}
+.thumb .nm{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);color:#fff;font-size:9px;text-align:center;padding:1px}
+.thumb .mv{position:absolute;bottom:2px;width:18px;height:18px;border:0;border-radius:4px;background:rgba(255,255,255,.85);color:#111;font-size:11px;line-height:1;display:grid;place-items:center}
+.thumb .mv.l{left:2px}.thumb .mv.r{right:2px}
+/* item block (post / destaque) */
+.item{border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 14px;background:#FCFDFF}
+.item-h{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+.item-h .badge{background:var(--yale);color:#fff;font-size:12px;font-weight:700;border-radius:6px;padding:3px 9px}
+.item-h .badge.d{background:var(--celtic)}
+.item-h .ttl{font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-h .tools{display:flex;gap:6px}
+.item-h .tools button{border:1px solid var(--line);background:var(--card);border-radius:8px;width:32px;height:32px;font-size:15px;color:var(--ink-2)}
+.item-h .tools button:hover{border-color:var(--accent);color:var(--accent)}
+.item-h .tools .rm:hover{border-color:var(--fix);color:var(--fix)}
+.chk{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;cursor:pointer;margin:2px 0}
+.chk input{width:18px;height:18px}
+.add{border:1.5px dashed var(--accent);background:#EAF3FC;color:var(--accent);border-radius:12px;padding:12px;width:100%;font-weight:700}
+.add:hover{background:#DCEBFB}
+/* preview grid */
+.pv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;max-width:340px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.pv-grid .cell{aspect-ratio:3/4;background:#e6eef7;position:relative}
+.pv-grid .cell img{width:100%;height:100%;object-fit:cover}
+.pv-grid .cell .tag{position:absolute;top:3px;right:4px;font-size:9px;background:rgba(0,0,0,.55);color:#fff;padding:1px 5px;border-radius:99px}
+.pv-grid .cell.empty{display:grid;place-items:center;color:var(--ink-2);font-size:20px}
+.pv-grid .cell.old{filter:grayscale(.3) opacity(.7)}
+/* barra fixa */
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -6px 20px -12px rgba(5,30,50,.4);z-index:10}
+.bar-in{max-width:1000px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.bar .status{flex:1;min-width:200px;font-size:13px;color:var(--ink-2)}
+.bar .status b{color:var(--ink)}
+.btn{border:0;border-radius:10px;padding:12px 20px;font-weight:700;font-size:15px}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--celtic)}
+.btn.primary:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.errs{color:var(--fix);font-size:13px;font-weight:600;margin:0 0 10px;display:none}
+.errs.show{display:block}
+.errs ul{margin:6px 0 0;padding-left:18px}
+.ok-msg{background:#E8F6EE;border:1px solid #B9E2CB;color:var(--ok);border-radius:12px;padding:14px 16px;margin:0 0 18px;display:none}
+.ok-msg.show{display:block}
+.ok-msg b{color:#14663D}
+.ok-msg ol{margin:8px 0 0;padding-left:20px;color:var(--ink)}
+.ok-msg code{background:#fff;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:13px}
+details{margin-top:10px}
+summary{cursor:pointer;font-weight:700;font-size:13px;color:var(--accent)}
+.foot{text-align:center;color:var(--ink-2);font-size:12px;margin-top:30px}
+</style>
+</head>
+<body>
+<div class="stripe" aria-hidden="true"><i style="flex:4;background:#051E32"></i><i style="flex:8;background:#053C73"></i><i style="flex:18;background:#0578DC"></i><i style="flex:30;background:#055AAA"></i><i style="flex:40;background:#05D2FF"></i></div>
+<header class="top"><div class="top-in">
+  <img src="/assets/clintia-logo.png" alt="ClintIA"><span class="sep"></span>
+  <div><small>Montador de páginas de aprovação</small><h1>Novo cliente / ciclo</h1></div>
+</div></header>
+
+<main class="wrap">
+  <p class="intro"><b>Como funciona:</b> preencha os campos, arraste as fotos de cada post, confira a prévia e clique em <b>Baixar pacote</b>. Você recebe um arquivo <code>.zip</code> com tudo pronto e nomeado — é só subir no GitHub. Nada de mexer em código. Seu rascunho de texto fica salvo neste navegador automaticamente.</p>
+
+  <div class="ok-msg" id="ok-msg"></div>
+
+  <!-- CLIENTE -->
+  <section class="card">
+    <h2>1. Cliente</h2>
+    <p class="sub">Dados de identificação. A “pasta” e o “ciclo” definem o endereço no GitHub.</p>
+    <div class="grid2">
+      <div class="field"><label>Nome do cliente</label><input type="text" id="cliente" placeholder="Ex.: Gabriela Kaufman"><p class="hint">Aparece no topo da página.</p></div>
+      <div class="field"><label>Título do conteúdo</label><input type="text" id="titulo" placeholder="Ex.: Estruturação do perfil"><p class="hint">Ex.: “Conteúdo de outubro”, “Campanha de setembro”.</p></div>
+    </div>
+    <div class="grid3">
+      <div class="field"><label>Pasta do cliente</label><input type="text" id="slug" placeholder="gabriela-kaufman"><p class="hint">Só minúsculas, números e hífen. Preenche sozinho pelo nome.</p></div>
+      <div class="field"><label>Ciclo</label><input type="text" id="ciclo" placeholder="2026-10-outubro"><p class="hint">Ex.: <code>2026-10</code>. Só minúsculas, números e hífen.</p></div>
+      <div class="field"><label>WhatsApp da agência <span class="opt">(opcional)</span></label><input type="text" id="whatsapp" placeholder="5511999998888"><p class="hint">Só números, com 55 e DDD. Usado no botão de emergência de envio.</p></div>
+    </div>
+  </section>
+
+  <!-- PERFIL -->
+  <section class="card">
+    <h2>2. Perfil (prévia do Instagram)</h2>
+    <p class="sub">É o cabeçalho do perfil que o cliente vê na simulação.</p>
+    <div class="grid2">
+      <div class="field"><label>@ do Instagram</label><input type="text" id="usuario" placeholder="psigabrielakaufman"></div>
+      <div class="field"><label>Nome no perfil</label><input type="text" id="nome" placeholder="Gabriela Kaufman | Psicóloga"></div>
+    </div>
+    <div class="field"><label>Bio</label><textarea id="bio" placeholder="Uma linha por linha:&#10;Um espaço para se sentir ouvida&#10;Presencial em SP ou Online&#10;CRP 06/176007"></textarea><p class="hint">Cada linha vira uma linha da bio. Inclua o registro profissional (CRP/CRM/CRO) quando for saúde.</p></div>
+    <div class="grid2">
+      <div class="field"><label>Link da bio</label><input type="text" id="link" placeholder="linktr.ee/psigabrielakaufman"></div>
+      <div class="field"><label>Rodapé / responsável técnico <span class="opt">(opcional)</span></label><input type="text" id="rodape" placeholder="Gabriela Kaufman, psicóloga. CRP 06/176007"><p class="hint">Aparece embaixo das legendas.</p></div>
+    </div>
+    <div class="grid3">
+      <div class="field"><label>Posts <span class="opt">(nº)</span></label><input type="number" id="s_posts" min="0" placeholder="21"></div>
+      <div class="field"><label>Seguidores</label><input type="text" id="s_seg" placeholder="97 ou 1.2k"></div>
+      <div class="field"><label>Seguindo</label><input type="text" id="s_seg2" placeholder="123"></div>
+    </div>
+    <div class="field"><label>Foto de perfil (avatar)</label>
+      <div class="drop mini" data-drop="avatar">Arraste a foto do perfil aqui ou <b>clique para escolher</b></div>
+      <div class="thumbs" id="th-avatar"></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="incluirBio"> É uma bio nova — quero que o cliente aprove a bio</label>
+  </section>
+
+  <!-- FEED -->
+  <section class="card">
+    <h2>3. Posts do feed</h2>
+    <p class="sub">Na ordem de publicação. Foto única, carrossel ou reels.</p>
+    <div id="feed"></div>
+    <button class="add" id="add-feed">+ Adicionar post</button>
+  </section>
+
+  <!-- DESTAQUES -->
+  <section class="card">
+    <h2>4. Destaques <span class="opt" style="font-weight:500;color:var(--ink-2);text-transform:none">(opcional)</span></h2>
+    <p class="sub">Os balõezinhos de destaque do perfil, com capa e telas de stories.</p>
+    <div id="dest"></div>
+    <button class="add" id="add-dest">+ Adicionar destaque</button>
+  </section>
+
+  <!-- PUBLICADOS -->
+  <section class="card">
+    <h2>5. Já publicados <span class="opt" style="font-weight:500;color:var(--ink-2);text-transform:none">(opcional)</span></h2>
+    <p class="sub">Fotos de posts antigos que já estão no ar. Aparecem em cinza na grade, só pra dar contexto (não precisam de aprovação).</p>
+    <div class="drop mini" data-drop="publicados">Arraste as fotos já publicadas ou <b>clique para escolher</b></div>
+    <div class="thumbs" id="th-publicados"></div>
+  </section>
+
+  <!-- PREVIEW -->
+  <section class="card">
+    <h2>6. Prévia da grade</h2>
+    <p class="sub">Como o feed vai aparecer no topo do perfil (posts novos primeiro, publicados em cinza no fim).</p>
+    <div class="pv-grid" id="pv-grid"></div>
+  </section>
+
+  <p class="foot">Montador interno ClintIA · nenhuma foto sai do seu navegador até você baixar o pacote.</p>
+</main>
+
+<div class="bar"><div class="bar-in">
+  <div class="status" id="status"></div>
+  <button class="btn ghost" id="btn-reset">Limpar tudo</button>
+  <button class="btn primary" id="btn-download">Baixar pacote (.zip)</button>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const $ = (s,el=document)=>el.querySelector(s);
+const DKEY = "montador:clintia:rascunho";
+
+// estado — arquivos (File) ficam aqui; texto é salvo em localStorage
+const state = {
+  avatar: null,           // {file,url}
+  feed: [],               // {tipo,titulo,legenda,fixado,roteiro, imgs:[{file,url}], video:{file,url}|null}
+  dest: [],               // {rotulo,titulo, capa:{file,url}|null, imgs:[{file,url}]}
+  publicados: [],         // [{file,url}]
+};
+
+const slugify = s => (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+  .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+const ext = f => { const m=(f.name||"").match(/\.(jpe?g|png|webp|mp4|mov)$/i); return m?m[0].toLowerCase().replace(".jpeg",".jpg").replace(".mov",".mp4"):(f.type&&f.type.startsWith("video")?".mp4":".jpg"); };
+const mk = file => ({file, url:URL.createObjectURL(file)});
+
+/* ---------- campos de texto ---------- */
+const TXT = ["cliente","titulo","slug","ciclo","whatsapp","usuario","nome","bio","link","rodape","s_posts","s_seg","s_seg2"];
+function saveDraft(){
+  const d={incluirBio:$("#incluirBio").checked};
+  TXT.forEach(id=>d[id]=$("#"+id).value);
+  d.feed = state.feed.map(p=>({tipo:p.tipo,titulo:p.titulo,legenda:p.legenda,fixado:p.fixado,roteiro:p.roteiro}));
+  d.dest = state.dest.map(x=>({rotulo:x.rotulo,titulo:x.titulo}));
+  try{localStorage.setItem(DKEY, JSON.stringify(d));}catch(e){}
+}
+function loadDraft(){
+  let d; try{ d=JSON.parse(localStorage.getItem(DKEY)||"null"); }catch(e){}
+  if(!d) return;
+  TXT.forEach(id=>{ if(d[id]!=null) $("#"+id).value=d[id]; });
+  $("#incluirBio").checked=!!d.incluirBio;
+  (d.feed||[]).forEach(p=>state.feed.push({tipo:p.tipo||"imagem",titulo:p.titulo||"",legenda:p.legenda||"",fixado:!!p.fixado,roteiro:p.roteiro||"",imgs:[],video:null}));
+  (d.dest||[]).forEach(x=>state.dest.push({rotulo:x.rotulo||"",titulo:x.titulo||"",capa:null,imgs:[]}));
+}
+
+/* ---------- dropzones genéricos ---------- */
+function wireDrop(el, onFiles, accept){
+  const inp=document.createElement("input"); inp.type="file"; inp.accept=accept||"image/*"; inp.multiple=true; inp.style.display="none";
+  el.after(inp);
+  el.onclick=()=>inp.click();
+  inp.onchange=()=>{ if(inp.files.length) onFiles([...inp.files]); inp.value=""; };
+  el.addEventListener("dragover",e=>{e.preventDefault();el.classList.add("over");});
+  el.addEventListener("dragleave",()=>el.classList.remove("over"));
+  el.addEventListener("drop",e=>{e.preventDefault();el.classList.remove("over"); if(e.dataTransfer.files.length) onFiles([...e.dataTransfer.files]);});
+}
+// avatar e publicados (fixos no HTML)
+wireDrop($('[data-drop="avatar"]'), files=>{ state.avatar=mk(files[0]); renderThumbs(); render(); });
+wireDrop($('[data-drop="publicados"]'), files=>{ files.forEach(f=>state.publicados.push(mk(f))); renderThumbs(); render(); });
+
+/* ---------- thumbnails ---------- */
+function thumbEl(item, arr, i, opts={}){
+  const t=document.createElement("div"); t.className="thumb"+(opts.round?" rd":"");
+  const isVid=item.file.type&&item.file.type.startsWith("video");
+  t.innerHTML = (isVid?`<video src="${item.url}" muted></video>`:`<img src="${item.url}">`)+
+    `<button class="del" title="Remover">×</button>`+
+    (opts.name?`<span class="nm">${opts.name}</span>`:"")+
+    (arr&&arr.length>1&&!opts.round?`<button class="mv l" title="Mover">‹</button><button class="mv r" title="Mover">›</button>`:"");
+  t.querySelector(".del").onclick=()=>{ opts.onDel(); renderThumbs(); render(); };
+  const l=t.querySelector(".mv.l"), r=t.querySelector(".mv.r");
+  if(l) l.onclick=()=>{ if(i>0){[arr[i-1],arr[i]]=[arr[i],arr[i-1]];renderThumbs();render();} };
+  if(r) r.onclick=()=>{ if(i<arr.length-1){[arr[i+1],arr[i]]=[arr[i],arr[i+1]];renderThumbs();render();} };
+  return t;
+}
+function renderThumbs(){
+  const av=$("#th-avatar"); av.innerHTML="";
+  if(state.avatar) av.append(thumbEl(state.avatar,null,0,{round:true,onDel:()=>state.avatar=null}));
+  const pb=$("#th-publicados"); pb.innerHTML="";
+  state.publicados.forEach((p,i)=>pb.append(thumbEl(p,state.publicados,i,{onDel:()=>state.publicados.splice(i,1)})));
+  state.feed.forEach((p,fi)=>{
+    const box=$("#imgs-f"+fi); if(box){ box.innerHTML=""; p.imgs.forEach((im,i)=>box.append(thumbEl(im,p.imgs,i,{onDel:()=>p.imgs.splice(i,1)}))); }
+    const vb=$("#vid-f"+fi); if(vb){ vb.innerHTML=""; if(p.video) vb.append(thumbEl(p.video,null,0,{onDel:()=>p.video=null})); }
+  });
+  state.dest.forEach((x,di)=>{
+    const cb=$("#capa-d"+di); if(cb){ cb.innerHTML=""; if(x.capa) cb.append(thumbEl(x.capa,null,0,{round:true,onDel:()=>x.capa=null})); }
+    const sb=$("#imgs-d"+di); if(sb){ sb.innerHTML=""; x.imgs.forEach((im,i)=>sb.append(thumbEl(im,x.imgs,i,{onDel:()=>x.imgs.splice(i,1)}))); }
+  });
+}
+
+/* ---------- FEED ---------- */
+function renderFeed(){
+  const wrap=$("#feed"); wrap.innerHTML="";
+  state.feed.forEach((p,i)=>{
+    const el=document.createElement("div"); el.className="item";
+    el.innerHTML=`
+      <div class="item-h"><span class="badge">Post ${String(i+1).padStart(2,"0")}</span>
+        <span class="ttl">${p.titulo?escapeHtml(p.titulo):"<i style='color:var(--ink-2)'>sem título</i>"}</span>
+        <span class="tools">
+          <button data-mv="-1" title="Subir">↑</button>
+          <button data-mv="1" title="Descer">↓</button>
+          <button class="rm" data-rm title="Remover">×</button>
+        </span></div>
+      <div class="grid2">
+        <div class="field"><label>Tipo</label><select data-k="tipo">
+          <option value="imagem">Foto única</option>
+          <option value="carrossel">Carrossel (várias fotos)</option>
+          <option value="reels">Reels (roteiro + vídeo)</option>
+        </select></div>
+        <div class="field"><label>Título</label><input type="text" data-k="titulo" placeholder="Título curto do post"></div>
+      </div>
+      <div class="field"><label>Legenda <span class="opt">(pode deixar em branco)</span></label><textarea data-k="legenda" placeholder="Legenda completa do post"></textarea></div>
+      <div class="field" data-only="imagem,carrossel"><label>Fotos <span class="opt" data-imghint></span></label>
+        <div class="drop mini" data-imgdrop>Arraste as fotos ou <b>clique para escolher</b></div>
+        <div class="thumbs" id="imgs-f${i}"></div></div>
+      <div class="field" data-only="reels"><label>Roteiro do reels</label><textarea data-k="roteiro" placeholder="Roteiro para gravação"></textarea></div>
+      <div class="field" data-only="reels"><label>Vídeo <span class="opt">(opcional — se já tiver gravado)</span></label>
+        <div class="drop mini" data-viddrop>Arraste o vídeo (.mp4) ou <b>clique para escolher</b></div>
+        <div class="thumbs" id="vid-f${i}"></div></div>
+      <label class="chk"><input type="checkbox" data-k="fixado"> Fixado no topo do perfil</label>`;
+    // bind
+    el.querySelector('[data-k="tipo"]').value=p.tipo;
+    el.querySelector('[data-k="titulo"]').value=p.titulo;
+    el.querySelector('[data-k="legenda"]').value=p.legenda;
+    el.querySelector('[data-k="roteiro"]').value=p.roteiro;
+    el.querySelector('[data-k="fixado"]').checked=p.fixado;
+    el.querySelectorAll("[data-k]").forEach(inp=>{
+      const k=inp.dataset.k;
+      inp.oninput=()=>{ p[k]= inp.type==="checkbox"?inp.checked:inp.value; if(k==="tipo"){applyOnly(el,p.tipo);render();} if(k==="titulo"){el.querySelector(".ttl").textContent=p.titulo||"sem título";} saveDraft(); if(k==="tipo")renderThumbs(); };
+    });
+    el.querySelector("[data-rm]").onclick=()=>{ state.feed.splice(i,1); render(); };
+    el.querySelectorAll("[data-mv]").forEach(b=>b.onclick=()=>{ const j=i+ +b.dataset.mv; if(j>=0&&j<state.feed.length){[state.feed[j],state.feed[i]]=[state.feed[i],state.feed[j]];render();} });
+    wireDrop(el.querySelector("[data-imgdrop]"), files=>{ const imgs=files.filter(f=>f.type.startsWith("image")); if(p.tipo==="imagem"){p.imgs=[mk(imgs[0])];}else{imgs.forEach(f=>p.imgs.push(mk(f)));} renderThumbs(); render(); });
+    wireDrop(el.querySelector("[data-viddrop]"), files=>{ const v=files.find(f=>f.type.startsWith("video")); if(v){p.video=mk(v);renderThumbs();render();} }, "video/*");
+    wrap.append(el);
+    applyOnly(el,p.tipo);
+    const h=el.querySelector("[data-imghint]"); if(h) h.textContent = p.tipo==="imagem"?"(1 foto)":"(2 a 10 fotos, na ordem)";
+  });
+  renderThumbs();
+}
+function applyOnly(el,tipo){ el.querySelectorAll("[data-only]").forEach(f=>{ f.style.display=f.dataset.only.split(",").includes(tipo)?"":"none"; }); }
+
+/* ---------- DESTAQUES ---------- */
+function renderDest(){
+  const wrap=$("#dest"); wrap.innerHTML="";
+  state.dest.forEach((x,i)=>{
+    const el=document.createElement("div"); el.className="item";
+    el.innerHTML=`
+      <div class="item-h"><span class="badge d">Destaque ${i+1}</span>
+        <span class="ttl">${x.rotulo?escapeHtml(x.rotulo):"<i style='color:var(--ink-2)'>sem nome</i>"}</span>
+        <span class="tools"><button data-mv="-1">↑</button><button data-mv="1">↓</button><button class="rm" data-rm>×</button></span></div>
+      <div class="grid2">
+        <div class="field"><label>Nome do destaque <span class="opt">(no balãozinho)</span></label><input type="text" data-k="rotulo" placeholder="Ex.: Quem sou"></div>
+        <div class="field"><label>Título <span class="opt">(na lista de aprovação)</span></label><input type="text" data-k="titulo" placeholder="Ex.: Destaque: Quem sou"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Capa <span class="opt">(o balãozinho redondo)</span></label>
+          <div class="drop mini" data-capadrop>Arraste a capa ou <b>clique</b></div><div class="thumbs" id="capa-d${i}"></div></div>
+        <div class="field"><label>Telas (stories)</label>
+          <div class="drop mini" data-imgdrop>Arraste as telas ou <b>clique</b></div><div class="thumbs" id="imgs-d${i}"></div></div>
+      </div>`;
+    el.querySelector('[data-k="rotulo"]').value=x.rotulo;
+    el.querySelector('[data-k="titulo"]').value=x.titulo;
+    el.querySelectorAll("[data-k]").forEach(inp=>{ const k=inp.dataset.k; inp.oninput=()=>{ x[k]=inp.value; if(k==="rotulo")el.querySelector(".ttl").textContent=x.rotulo||"sem nome"; saveDraft(); }; });
+    el.querySelector("[data-rm]").onclick=()=>{ state.dest.splice(i,1); render(); };
+    el.querySelectorAll("[data-mv]").forEach(b=>b.onclick=()=>{ const j=i+ +b.dataset.mv; if(j>=0&&j<state.dest.length){[state.dest[j],state.dest[i]]=[state.dest[i],state.dest[j]];render();} });
+    wireDrop(el.querySelector("[data-capadrop]"), files=>{ const im=files.find(f=>f.type.startsWith("image")); if(im){x.capa=mk(im);renderThumbs();render();} });
+    wireDrop(el.querySelector("[data-imgdrop]"), files=>{ files.filter(f=>f.type.startsWith("image")).forEach(f=>x.imgs.push(mk(f))); renderThumbs(); render(); });
+    wrap.append(el);
+  });
+  renderThumbs();
+}
+
+/* ---------- prévia da grade ---------- */
+function renderPreview(){
+  const g=$("#pv-grid"); g.innerHTML="";
+  const feed=state.feed;
+  const pinned=feed.map((p,i)=>({p,i})).filter(o=>o.p.fixado);
+  const rest=feed.map((p,i)=>({p,i})).filter(o=>!o.p.fixado).reverse();
+  const ordered=[...pinned,...rest];
+  ordered.forEach(({p})=>{
+    const c=document.createElement("div"); c.className="cell";
+    const cover = p.tipo==="reels" ? (p.imgs[0]||p.video) : p.imgs[0];
+    if(cover && cover.file.type.startsWith("image")) c.innerHTML=`<img src="${cover.url}">`;
+    else if(p.tipo==="reels") c.innerHTML=`<div class="cell empty">▶</div>`;
+    else c.innerHTML=`<div class="cell empty">＋</div>`;
+    const tag=p.tipo==="carrossel"?"❐":p.tipo==="reels"?"▶":p.fixado?"📌":"";
+    if(tag) c.innerHTML+=`<span class="tag">${tag}</span>`;
+    g.append(c);
+  });
+  state.publicados.forEach(pb=>{ const c=document.createElement("div"); c.className="cell old"; c.innerHTML=`<img src="${pb.url}">`; g.append(c); });
+  if(!g.children.length) g.innerHTML=`<div class="cell empty">＋</div><div class="cell empty">＋</div><div class="cell empty">＋</div>`;
+}
+
+/* ---------- render geral + status ---------- */
+function render(){ renderFeed(); renderDest(); renderPreview(); updateStatus(); saveDraft(); }
+function countFiles(){ let n=0; if(state.avatar)n++; state.feed.forEach(p=>{n+=p.imgs.length; if(p.video)n++;}); state.dest.forEach(x=>{if(x.capa)n++; n+=x.imgs.length;}); n+=state.publicados.length; return n; }
+function updateStatus(){
+  const posts=state.feed.length, dest=state.dest.length, files=countFiles();
+  $("#status").innerHTML=`<b>${posts}</b> post(s) · <b>${dest}</b> destaque(s) · <b>${files}</b> arquivo(s) de mídia`;
+}
+
+const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- validação + geração ---------- */
+function validate(){
+  const e=[];
+  const g=id=>$("#"+id).value.trim();
+  if(!g("cliente")) e.push("Falta o nome do cliente.");
+  if(!g("titulo")) e.push("Falta o título do conteúdo.");
+  const slug=g("slug"); if(!slug) e.push("Falta a pasta do cliente."); else if(!/^[a-z0-9-]+$/.test(slug)) e.push("Pasta do cliente só pode ter minúsculas, números e hífen.");
+  const ciclo=g("ciclo"); if(!ciclo) e.push("Falta o ciclo."); else if(!/^[a-z0-9-]+$/.test(ciclo)) e.push("Ciclo só pode ter minúsculas, números e hífen.");
+  if(!g("usuario")) e.push("Falta o @ do Instagram.");
+  if(!g("nome")) e.push("Falta o nome do perfil.");
+  if(!state.avatar) e.push("Falta a foto de perfil (avatar).");
+  if(g("whatsapp") && !/^\d{10,15}$/.test(g("whatsapp"))) e.push("WhatsApp deve ter só números (com 55 e DDD).");
+  if(!state.feed.length && !state.dest.length && !$("#incluirBio").checked) e.push("Adicione ao menos 1 post, destaque ou a aprovação da bio.");
+  state.feed.forEach((p,i)=>{
+    const n=`Post ${String(i+1).padStart(2,"0")}`;
+    if(!p.titulo.trim()) e.push(`${n}: falta o título.`);
+    if(p.tipo==="imagem" && p.imgs.length!==1) e.push(`${n} (foto única): coloque exatamente 1 foto.`);
+    if(p.tipo==="carrossel" && p.imgs.length<2) e.push(`${n} (carrossel): coloque ao menos 2 fotos.`);
+    if(p.tipo==="reels" && !p.roteiro.trim() && !p.video) e.push(`${n} (reels): coloque o roteiro ou o vídeo.`);
+  });
+  state.dest.forEach((x,i)=>{
+    const n=`Destaque ${i+1}`;
+    if(!x.rotulo.trim()) e.push(`${n}: falta o nome.`);
+    if(!x.capa) e.push(`${n}: falta a capa.`);
+    if(!x.imgs.length) e.push(`${n}: coloque ao menos 1 tela (story).`);
+  });
+  return e;
+}
+
+function build(){
+  const g=id=>$("#"+id).value.trim();
+  const slug=g("slug"), ciclo=g("ciclo");
+  const files={}; // caminho -> File
+  const add=(name,f)=>{ files["midia/"+name]=f.file; return name; };
+
+  const dados={
+    cliente:g("cliente"), titulo:g("titulo"), whatsappAgencia:g("whatsapp"),
+    perfil:{
+      usuario:g("usuario"), nome:g("nome"),
+      bio:g("bio").split("\n").map(s=>s.trim()).filter(Boolean),
+      link:g("link"), rodape:g("rodape"),
+      avatar: add("avatar"+ext(state.avatar.file), state.avatar),
+      stats:{ posts: Number(g("s_posts"))||0, seguidores:g("s_seg")||"0", seguindo:g("s_seg2")||"0" }
+    },
+    publicados: state.publicados.map((pb,i)=>add("old"+(i+1)+ext(pb.file), pb)),
+    itens:[]
+  };
+  if($("#incluirBio").checked)
+    dados.itens.push({id:"bio",grupo:"perfil",tipo:"bio",num:"Bio",titulo:"Bio",legenda:null});
+  state.dest.forEach((x,i)=>{
+    const capa=add("c"+(i+1)+ext(x.capa.file), x.capa);
+    const imgs=x.imgs.map((im,j)=>add("s"+(i+1)+"_"+(j+1)+ext(im.file), im));
+    dados.itens.push({id:"d"+(i+1),grupo:"perfil",tipo:"destaque",titulo:x.titulo||("Destaque: "+x.rotulo),rotulo:x.rotulo,capa,imgs,legenda:null});
+  });
+  state.feed.forEach((p,i)=>{
+    const id="p"+(i+1), num=String(i+1).padStart(2,"0");
+    const item={id,grupo:"feed",num,tipo:p.tipo,titulo:p.titulo};
+    if(p.fixado) item.fixado=true;
+    if(p.tipo==="reels"){
+      item.titulo = /^reels:/i.test(p.titulo)?p.titulo:("Reels: "+p.titulo);
+      item.roteiro=p.roteiro||"";
+      if(p.video) item.video=add(id+ext(p.video.file), p.video);
+    }else{
+      item.imgs=p.imgs.map((im,j)=>add(id+(j?"_"+(j+1):"")+ext(im.file), im));
+    }
+    item.legenda = p.legenda || "";
+    dados.itens.push(item);
+  });
+
+  files["dados.json"]=new Blob([JSON.stringify(dados,null,2)],{type:"application/json"});
+  return {slug,ciclo,files};
+}
+
+async function download(){
+  const errs=validate();
+  const box=$("#ok-msg");
+  if(errs.length){
+    box.className="ok-msg show"; box.style.borderColor="#E2B9B9"; box.style.background="#FBEDED";
+    box.innerHTML=`<b style="color:#8A2E2E">Faltam alguns itens antes de baixar:</b><ul style="margin:8px 0 0;padding-left:20px;color:#8A2E2E">${errs.map(e=>`<li>${escapeHtml(e)}</li>`).join("")}</ul>`;
+    box.scrollIntoView({behavior:"smooth",block:"center"}); return;
+  }
+  const {slug,ciclo,files}=build();
+  const root=`clientes/${slug}/${ciclo}/`;
+  const zip=new JSZip();
+  for(const [path,blob] of Object.entries(files)) zip.file(root+path, blob);
+  const out=await zip.generateAsync({type:"blob"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(out); a.download=`${slug}-${ciclo}.zip`; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  box.className="ok-msg show"; box.style.borderColor="#B9E2CB"; box.style.background="#E8F6EE";
+  box.innerHTML=`<b>Pacote baixado: ${slug}-${ciclo}.zip</b>
+    <ol>
+      <li>Descompacte o arquivo. Dentro tem a pasta <code>clientes</code>.</li>
+      <li>No GitHub, abra o repositório → <b>Add file</b> → <b>Upload files</b>.</li>
+      <li>Arraste a pasta <code>clientes</code> pra dentro. Se tiver muitas fotos, suba a pasta <code>midia</code> num envio separado (limite de 100 por vez).</li>
+      <li><b>Commit changes.</b> A Vercel publica sozinha e o link aparece no painel em ~1 min.</li>
+    </ol>`;
+  box.scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+/* ---------- eventos globais ---------- */
+$("#cliente").addEventListener("input",()=>{ const s=$("#slug"); if(!s.dataset.touched) s.value=slugify($("#cliente").value); saveDraft(); });
+$("#slug").addEventListener("input",e=>e.target.dataset.touched="1");
+TXT.concat("incluirBio").forEach(id=>$("#"+id).addEventListener("input",saveDraft));
+$("#incluirBio").addEventListener("change",saveDraft);
+$("#add-feed").onclick=()=>{ state.feed.push({tipo:"imagem",titulo:"",legenda:"",fixado:false,roteiro:"",imgs:[],video:null}); render(); };
+$("#add-dest").onclick=()=>{ state.dest.push({rotulo:"",titulo:"",capa:null,imgs:[]}); render(); };
+$("#btn-download").onclick=download;
+$("#btn-reset").onclick=()=>{ if(confirm("Limpar tudo e começar de novo? As fotos adicionadas serão perdidas.")){ localStorage.removeItem(DKEY); location.reload(); } };
+window.addEventListener("beforeunload",saveDraft);
+
+if(typeof JSZip==="undefined"){ $("#btn-download").disabled=true; $("#status").innerHTML="<b style='color:var(--fix)'>Sem internet para carregar o compactador. Reconecte e recarregue a página.</b>"; }
+
+loadDraft();
+render();
+</script>
+</body>
+</html>

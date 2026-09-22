@@ -63,6 +63,20 @@ O Zapier recebe: `cliente`, `ciclo`, `titulo`, `rodada`, `resumo`, `link`.
 
 ## Rotina: novo cliente ou novo ciclo
 
+### Jeito fácil: o montador (recomendado, sem mexer em código)
+
+`https://SEU-DOMINIO/montador` → uma página com formulário.
+
+1. Preencha os campos (cliente, bio, posts, legendas) e **arraste as fotos** de cada post.
+2. Confira a prévia da grade ali na hora.
+3. Clique em **Baixar pacote**. Você recebe um `.zip` com o `dados.json` e todas as fotos **já nomeadas certinho**.
+4. Descompacte. No GitHub: **Add file → Upload files**, arraste a pasta `clientes` de dentro do zip e **Commit**. (Muitas fotos? Suba a pasta `midia` num envio separado — o GitHub aceita 100 por vez.)
+5. A Vercel publica sozinha em ~1 min. Pegue o link no painel e mande pro cliente.
+
+O montador não precisa de IA nem de editar JSON, salva seu rascunho de texto no navegador, e valida antes de baixar (avisa se faltar foto, título, etc.). Nenhuma foto sai do navegador até você baixar o pacote.
+
+### Jeito manual (alternativa, editando o arquivo)
+
 1. Crie a pasta `clientes/<cliente>/<ciclo>/` (só minúsculas, números e hífen: `clinica-bem-viver/2026-10`).
 2. Copie o `dados.json` de `_modelo` e preencha.
 3. Coloque as artes em `midia/` com os mesmos nomes usados no `dados.json`.
