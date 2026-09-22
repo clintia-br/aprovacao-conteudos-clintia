@@ -3,7 +3,7 @@
 // Body: { cliente, ciclo, dados }  (dados = { cliente, titulo, whatsappAgencia, perfil, publicados, itens })
 const db = require("../lib/db");
 const { gerar } = require("../lib/token");
-const { SLUG, admin, link } = require("../lib/ciclo");
+const { SLUG, admin, link, garantirTabelas } = require("../lib/ciclo");
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") { res.setHeader("Allow", "POST"); return res.status(405).end(); }
@@ -23,6 +23,7 @@ module.exports = async (req, res) => {
   if (json.length > 500000) return res.status(400).json({ erro: "Conteúdo grande demais." });
 
   try {
+    await garantirTabelas();
     const agora = new Date().toISOString();
     await db().execute({
       sql: `INSERT INTO ciclos (cliente, ciclo, nome, titulo, total, dados, criado_em, atualizado_em)
@@ -36,6 +37,6 @@ module.exports = async (req, res) => {
     return res.json({ ok: true, token: gerar(cliente, ciclo), link: link(cliente, ciclo) });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ erro: "Falha ao salvar no banco." });
+    return res.status(500).json({ erro: "Falha ao salvar no banco: " + (err.message || err) });
   }
 };
