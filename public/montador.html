@@ -192,6 +192,7 @@ summary{cursor:pointer;font-weight:700;font-size:13px;color:var(--accent)}
   <div class="status" id="status"></div>
   <button class="btn ghost" id="btn-reset">Limpar tudo</button>
   <button class="btn primary" id="btn-download">Baixar pacote (.zip)</button>
+  <button class="btn primary" id="btn-salvar" style="display:none">Salvar no painel</button>
 </div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -215,9 +216,10 @@ const mk = file => ({file, url:URL.createObjectURL(file)});
 /* ---------- campos de texto ---------- */
 const TXT = ["cliente","titulo","slug","ciclo","whatsapp","usuario","nome","bio","link","rodape","s_posts","s_seg","s_seg2"];
 function saveDraft(){
+  if(window.PANEL) return; // no painel o conteúdo vai pro banco, não pro rascunho local
   const d={incluirBio:$("#incluirBio").checked};
   TXT.forEach(id=>d[id]=$("#"+id).value);
-  d.feed = state.feed.map(p=>({tipo:p.tipo,titulo:p.titulo,legenda:p.legenda,fixado:p.fixado,roteiro:p.roteiro}));
+  d.feed = state.feed.map(p=>({tipo:p.tipo,titulo:p.titulo,legenda:p.legenda,fixado:p.fixado,roteiro:p.roteiro,videoUrl:p.videoUrl}));
   d.dest = state.dest.map(x=>({rotulo:x.rotulo,titulo:x.titulo}));
   try{localStorage.setItem(DKEY, JSON.stringify(d));}catch(e){}
 }
@@ -226,7 +228,7 @@ function loadDraft(){
   if(!d) return;
   TXT.forEach(id=>{ if(d[id]!=null) $("#"+id).value=d[id]; });
   $("#incluirBio").checked=!!d.incluirBio;
-  (d.feed||[]).forEach(p=>state.feed.push({tipo:p.tipo||"imagem",titulo:p.titulo||"",legenda:p.legenda||"",fixado:!!p.fixado,roteiro:p.roteiro||"",imgs:[],video:null}));
+  (d.feed||[]).forEach(p=>state.feed.push({tipo:p.tipo||"imagem",titulo:p.titulo||"",legenda:p.legenda||"",fixado:!!p.fixado,roteiro:p.roteiro||"",videoUrl:p.videoUrl||"",imgs:[],video:null}));
   (d.dest||[]).forEach(x=>state.dest.push({rotulo:x.rotulo||"",titulo:x.titulo||"",capa:null,imgs:[]}));
 }
 
@@ -299,7 +301,8 @@ function renderFeed(){
         <div class="drop mini" data-imgdrop>Arraste as fotos ou <b>clique para escolher</b></div>
         <div class="thumbs" id="imgs-f${i}"></div></div>
       <div class="field" data-only="reels"><label>Roteiro do reels</label><textarea data-k="roteiro" placeholder="Roteiro para gravação"></textarea></div>
-      <div class="field" data-only="reels"><label>Vídeo <span class="opt">(opcional — se já tiver gravado)</span></label>
+      <div class="field" data-only="reels" data-vidurl><label>Link do vídeo <span class="opt">(opcional — Cloudinary, Drive, etc.)</span></label><input type="text" data-k="videoUrl" placeholder="https://..."><p class="hint">Se já tiver o vídeo gravado, cole o link. Sem link, a página mostra só o roteiro pra aprovação.</p></div>
+      <div class="field" data-only="reels" data-vidfile><label>Vídeo <span class="opt">(opcional — só no pacote .zip)</span></label>
         <div class="drop mini" data-viddrop>Arraste o vídeo (.mp4) ou <b>clique para escolher</b></div>
         <div class="thumbs" id="vid-f${i}"></div></div>
       <label class="chk"><input type="checkbox" data-k="fixado"> Fixado no topo do perfil</label>`;
@@ -308,7 +311,9 @@ function renderFeed(){
     el.querySelector('[data-k="titulo"]').value=p.titulo;
     el.querySelector('[data-k="legenda"]').value=p.legenda;
     el.querySelector('[data-k="roteiro"]').value=p.roteiro;
+    el.querySelector('[data-k="videoUrl"]').value=p.videoUrl||"";
     el.querySelector('[data-k="fixado"]').checked=p.fixado;
+    if(window.PANEL){ el.querySelector("[data-vidfile]").dataset.only="__none__"; } // no painel, vídeo só por link
     el.querySelectorAll("[data-k]").forEach(inp=>{
       const k=inp.dataset.k;
       inp.oninput=()=>{ p[k]= inp.type==="checkbox"?inp.checked:inp.value; if(k==="tipo"){applyOnly(el,p.tipo);render();} if(k==="titulo"){el.querySelector(".ttl").textContent=p.titulo||"sem título";} saveDraft(); if(k==="tipo")renderThumbs(); };
@@ -405,7 +410,7 @@ function validate(){
     if(!p.titulo.trim()) e.push(`${n}: falta o título.`);
     if(p.tipo==="imagem" && p.imgs.length!==1) e.push(`${n} (foto única): coloque exatamente 1 foto.`);
     if(p.tipo==="carrossel" && p.imgs.length<2) e.push(`${n} (carrossel): coloque ao menos 2 fotos.`);
-    if(p.tipo==="reels" && !p.roteiro.trim() && !p.video) e.push(`${n} (reels): coloque o roteiro ou o vídeo.`);
+    if(p.tipo==="reels" && !p.roteiro.trim() && !p.video && !(p.videoUrl&&p.videoUrl.trim())) e.push(`${n} (reels): coloque o roteiro ou o link do vídeo.`);
   });
   state.dest.forEach((x,i)=>{
     const n=`Destaque ${i+1}`;
@@ -416,11 +421,13 @@ function validate(){
   return e;
 }
 
-function build(){
+// Monta o dados.json + o mapa de mídias (nome -> File). opts.jpg força .jpg (modo painel, que recomprime).
+function buildData(opts={}){
   const g=id=>$("#"+id).value.trim();
   const slug=g("slug"), ciclo=g("ciclo");
-  const files={}; // caminho -> File
-  const add=(name,f)=>{ files["midia/"+name]=f.file; return name; };
+  const media={}; // nome (sem "midia/") -> File
+  const ex = f => opts.jpg ? ".jpg" : ext(f);
+  const add=(name,f)=>{ media[name]=f.file; return name; };
 
   const dados={
     cliente:g("cliente"), titulo:g("titulo"), whatsappAgencia:g("whatsapp"),
@@ -428,17 +435,17 @@ function build(){
       usuario:g("usuario"), nome:g("nome"),
       bio:g("bio").split("\n").map(s=>s.trim()).filter(Boolean),
       link:g("link"), rodape:g("rodape"),
-      avatar: add("avatar"+ext(state.avatar.file), state.avatar),
+      avatar: add("avatar"+ex(state.avatar.file), state.avatar),
       stats:{ posts: Number(g("s_posts"))||0, seguidores:g("s_seg")||"0", seguindo:g("s_seg2")||"0" }
     },
-    publicados: state.publicados.map((pb,i)=>add("old"+(i+1)+ext(pb.file), pb)),
+    publicados: state.publicados.map((pb,i)=>add("old"+(i+1)+ex(pb.file), pb)),
     itens:[]
   };
   if($("#incluirBio").checked)
     dados.itens.push({id:"bio",grupo:"perfil",tipo:"bio",num:"Bio",titulo:"Bio",legenda:null});
   state.dest.forEach((x,i)=>{
-    const capa=add("c"+(i+1)+ext(x.capa.file), x.capa);
-    const imgs=x.imgs.map((im,j)=>add("s"+(i+1)+"_"+(j+1)+ext(im.file), im));
+    const capa=add("c"+(i+1)+ex(x.capa.file), x.capa);
+    const imgs=x.imgs.map((im,j)=>add("s"+(i+1)+"_"+(j+1)+ex(im.file), im));
     dados.itens.push({id:"d"+(i+1),grupo:"perfil",tipo:"destaque",titulo:x.titulo||("Destaque: "+x.rotulo),rotulo:x.rotulo,capa,imgs,legenda:null});
   });
   state.feed.forEach((p,i)=>{
@@ -448,16 +455,15 @@ function build(){
     if(p.tipo==="reels"){
       item.titulo = /^reels:/i.test(p.titulo)?p.titulo:("Reels: "+p.titulo);
       item.roteiro=p.roteiro||"";
-      if(p.video) item.video=add(id+ext(p.video.file), p.video);
+      if(p.videoUrl && p.videoUrl.trim()) item.video=p.videoUrl.trim();       // link direto
+      else if(p.video && !opts.jpg) item.video=add(id+ext(p.video.file), p.video); // arquivo (só no zip)
     }else{
-      item.imgs=p.imgs.map((im,j)=>add(id+(j?"_"+(j+1):"")+ext(im.file), im));
+      item.imgs=p.imgs.map((im,j)=>add(id+(j?"_"+(j+1):"")+ex(im.file), im));
     }
     item.legenda = p.legenda || "";
     dados.itens.push(item);
   });
-
-  files["dados.json"]=new Blob([JSON.stringify(dados,null,2)],{type:"application/json"});
-  return {slug,ciclo,files};
+  return {slug,ciclo,dados,media};
 }
 
 async function download(){
@@ -468,10 +474,11 @@ async function download(){
     box.innerHTML=`<b style="color:#8A2E2E">Faltam alguns itens antes de baixar:</b><ul style="margin:8px 0 0;padding-left:20px;color:#8A2E2E">${errs.map(e=>`<li>${escapeHtml(e)}</li>`).join("")}</ul>`;
     box.scrollIntoView({behavior:"smooth",block:"center"}); return;
   }
-  const {slug,ciclo,files}=build();
+  const {slug,ciclo,dados,media}=buildData({jpg:false});
   const root=`clientes/${slug}/${ciclo}/`;
   const zip=new JSZip();
-  for(const [path,blob] of Object.entries(files)) zip.file(root+path, blob);
+  zip.file(root+"dados.json", new Blob([JSON.stringify(dados,null,2)],{type:"application/json"}));
+  for(const [name,file] of Object.entries(media)) zip.file(root+"midia/"+name, file);
   const out=await zip.generateAsync({type:"blob"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(out); a.download=`${slug}-${ciclo}.zip`; a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),4000);
@@ -491,16 +498,114 @@ $("#cliente").addEventListener("input",()=>{ const s=$("#slug"); if(!s.dataset.t
 $("#slug").addEventListener("input",e=>e.target.dataset.touched="1");
 TXT.concat("incluirBio").forEach(id=>$("#"+id).addEventListener("input",saveDraft));
 $("#incluirBio").addEventListener("change",saveDraft);
-$("#add-feed").onclick=()=>{ state.feed.push({tipo:"imagem",titulo:"",legenda:"",fixado:false,roteiro:"",imgs:[],video:null}); render(); };
+$("#add-feed").onclick=()=>{ state.feed.push({tipo:"imagem",titulo:"",legenda:"",fixado:false,roteiro:"",videoUrl:"",imgs:[],video:null}); render(); };
 $("#add-dest").onclick=()=>{ state.dest.push({rotulo:"",titulo:"",capa:null,imgs:[]}); render(); };
 $("#btn-download").onclick=download;
 $("#btn-reset").onclick=()=>{ if(confirm("Limpar tudo e começar de novo? As fotos adicionadas serão perdidas.")){ localStorage.removeItem(DKEY); location.reload(); } };
 window.addEventListener("beforeunload",saveDraft);
 
-if(typeof JSZip==="undefined"){ $("#btn-download").disabled=true; $("#status").innerHTML="<b style='color:var(--fix)'>Sem internet para carregar o compactador. Reconecte e recarregue a página.</b>"; }
+if(typeof JSZip==="undefined"){ $("#btn-download").disabled=true; }
 
-loadDraft();
-render();
+/* ================= modo painel: salvar direto no Turso ================= */
+const params=new URLSearchParams(location.search);
+window.PANEL = params.get("painel")==="1";
+const EDIT = window.PANEL && params.get("cliente") && params.get("ciclo");
+let PW = window.PANEL ? (sessionStorage.getItem("montador:pw")||"") : "";
+
+async function compress(file, maxW, q){
+  let bmp; try{ bmp=await createImageBitmap(file,{imageOrientation:"from-image"}); }catch(e){ bmp=await createImageBitmap(file); }
+  const scale=Math.min(1, maxW/bmp.width);
+  const w=Math.max(1,Math.round(bmp.width*scale)), h=Math.max(1,Math.round(bmp.height*scale));
+  const c=document.createElement("canvas"); c.width=w; c.height=h;
+  c.getContext("2d").drawImage(bmp,0,0,w,h); if(bmp.close)bmp.close();
+  return await new Promise(res=>c.toBlob(res,"image/jpeg",q));
+}
+const toB64=blob=>new Promise(res=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(",")[1]); r.readAsDataURL(blob); });
+
+function msgBox(kind,titulo,list){
+  const b=$("#ok-msg"); const cor={info:["#B9D4E2","#EAF3FC","#0A4A7A"],ok:["#B9E2CB","#E8F6EE","#14663D"],erro:["#E2B9B9","#FBEDED","#8A2E2E"]}[kind];
+  b.className="ok-msg show"; b.style.borderColor=cor[0]; b.style.background=cor[1];
+  b.innerHTML=`<b style="color:${cor[2]}">${escapeHtml(titulo)}</b>`+(list&&list.length?`<ul style="margin:8px 0 0;padding-left:20px;color:${cor[2]}">${list.map(e=>`<li>${escapeHtml(e)}</li>`).join("")}</ul>`:"");
+  b.scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+async function salvarNoPainel(){
+  const errs=validate(); if(errs.length) return msgBox("erro","Faltam alguns itens antes de salvar:",errs);
+  if(!PW){ PW=(prompt("Senha do painel:")||"").trim(); if(!PW) return; sessionStorage.setItem("montador:pw",PW); }
+  const btn=$("#btn-salvar"), old=btn.textContent; btn.disabled=true; btn.textContent="Salvando...";
+  try{
+    const {slug,ciclo,dados,media}=buildData({jpg:true});
+    const names=Object.keys(media), entries=[];
+    for(let i=0;i<names.length;i++){
+      msgBox("info",`Otimizando fotos… ${i+1}/${names.length}`);
+      const f=media[names[i]];
+      entries.push({nome:names[i],mime:"image/jpeg",b64:await toB64(await compress(f,1080,0.78))});
+      entries.push({nome:"_t/"+names[i],mime:"image/jpeg",b64:await toB64(await compress(f,360,0.72))});
+    }
+    let batch=[],size=0,done=0;
+    const flush=async()=>{ if(!batch.length)return;
+      const r=await fetch("/api/midia",{method:"POST",headers:{"Content-Type":"application/json","x-admin-password":PW},body:JSON.stringify({cliente:slug,ciclo,midias:batch})});
+      if(r.status===401) throw new Error("401");
+      if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.erro||"Falha ao enviar as fotos"); }
+      done+=batch.length; batch=[]; size=0; if(entries.length) msgBox("info",`Enviando fotos… ${done}/${entries.length}`);
+    };
+    for(const e of entries){ batch.push(e); size+=e.b64.length; if(size>1600000) await flush(); }
+    await flush();
+    msgBox("info","Salvando o cliente…");
+    const r=await fetch("/api/salvar",{method:"POST",headers:{"Content-Type":"application/json","x-admin-password":PW},body:JSON.stringify({cliente:slug,ciclo,dados})});
+    if(r.status===401) throw new Error("401");
+    if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.erro||"Falha ao salvar"); }
+    const j=await r.json();
+    localStorage.removeItem(DKEY);
+    const b=$("#ok-msg"); b.className="ok-msg show"; b.style.borderColor="#B9E2CB"; b.style.background="#E8F6EE";
+    b.innerHTML=`<b>${EDIT?"Cliente atualizado!":"Cliente salvo no painel!"}</b><ol><li>Link do cliente: <a href="${j.link}" target="_blank" rel="noopener">${j.link}</a></li><li>Já aparece no painel — copie o link e mande pro cliente.</li></ol><div style="margin-top:10px"><button class="btn ghost" onclick="location.href='/painel'">Voltar ao painel</button></div>`;
+    b.scrollIntoView({behavior:"smooth",block:"center"});
+  }catch(err){
+    if(err.message==="401"){ sessionStorage.removeItem("montador:pw"); PW=""; msgBox("erro","Senha do painel incorreta. Clique em Salvar de novo pra tentar.",[]); }
+    else msgBox("erro", err.message||"Falha ao salvar. Tente de novo.", []);
+  }finally{ btn.disabled=false; btn.textContent=old; }
+}
+
+async function carregarParaEditar(){
+  const cliente=params.get("cliente"), ciclo=params.get("ciclo");
+  if(!PW){ PW=(prompt("Senha do painel:")||"").trim(); if(!PW){ msgBox("erro","Precisa da senha do painel pra editar.",[]); return; } sessionStorage.setItem("montador:pw",PW); }
+  msgBox("info","Carregando o cliente para edição…");
+  let j; try{
+    const r=await fetch(`/api/ciclo?cliente=${encodeURIComponent(cliente)}&ciclo=${encodeURIComponent(ciclo)}`,{headers:{"x-admin-password":PW}});
+    if(r.status===401){ sessionStorage.removeItem("montador:pw"); PW=""; return msgBox("erro","Senha do painel incorreta. Recarregue e tente de novo.",[]); }
+    if(!r.ok) return msgBox("erro","Não consegui carregar este cliente pra edição.",[]);
+    j=await r.json();
+  }catch(e){ return msgBox("erro","Falha de conexão ao carregar.",[]); }
+  const d=j.dados, pf=d.perfil||{}, base=`/api/midia?c=${encodeURIComponent(cliente)}&y=${encodeURIComponent(ciclo)}&t=${j.token}&f=`;
+  $("#cliente").value=d.cliente||""; $("#slug").value=cliente; $("#slug").dataset.touched="1";
+  $("#ciclo").value=ciclo; $("#ciclo").readOnly=true; $("#titulo").value=d.titulo||""; $("#whatsapp").value=d.whatsappAgencia||"";
+  $("#usuario").value=pf.usuario||""; $("#nome").value=pf.nome||""; $("#bio").value=(pf.bio||[]).join("\n");
+  $("#link").value=pf.link||""; $("#rodape").value=pf.rodape||"";
+  const st=pf.stats||{}; $("#s_posts").value=st.posts||""; $("#s_seg").value=st.seguidores||""; $("#s_seg2").value=st.seguindo||"";
+  state.feed=[]; state.dest=[]; state.publicados=[]; state.avatar=null;
+  const pega=async nome=>{ try{ const r=await fetch(base+encodeURIComponent(nome)); if(!r.ok)return null; const b=await r.blob(); return new File([b],nome,{type:b.type||"image/jpeg"}); }catch(e){ return null; } };
+  if(pf.avatar){ const f=await pega(pf.avatar); if(f) state.avatar=mk(f); }
+  for(const k of d.publicados||[]){ const f=await pega(k); if(f) state.publicados.push(mk(f)); }
+  for(const it of d.itens||[]){
+    if(it.tipo==="bio"){ $("#incluirBio").checked=true; }
+    else if(it.tipo==="destaque"){ const capa=it.capa?await pega(it.capa):null; const imgs=[]; for(const k of it.imgs||[]){ const f=await pega(k); if(f) imgs.push(mk(f)); } state.dest.push({rotulo:it.rotulo||"",titulo:it.titulo||"",capa:capa?mk(capa):null,imgs}); }
+    else { const imgs=[]; for(const k of it.imgs||[]){ const f=await pega(k); if(f) imgs.push(mk(f)); } state.feed.push({tipo:it.tipo,titulo:(it.titulo||"").replace(/^Reels:\s*/i,""),legenda:it.legenda||"",fixado:!!it.fixado,roteiro:it.roteiro||"",videoUrl:(typeof it.video==="string"?it.video:""),imgs,video:null}); }
+  }
+  render(); renderThumbs();
+  $("#ok-msg").className="ok-msg";
+}
+
+if(window.PANEL){
+  $("#btn-salvar").style.display="";
+  $("#btn-download").classList.remove("primary"); $("#btn-download").classList.add("ghost"); $("#btn-download").textContent="Baixar zip (backup)";
+  $("#btn-salvar").onclick=salvarNoPainel;
+  $(".top h1").textContent = EDIT ? "Editar cliente" : "Novo cliente / ciclo";
+  $(".intro").innerHTML = `<b>Modo painel:</b> preencha, arraste as fotos e clique em <b>Salvar no painel</b>. O cliente fica salvo e o link já funciona. As fotos são comprimidas no seu navegador antes de subir.`;
+}
+
+if(EDIT){ render(); carregarParaEditar(); }
+else if(window.PANEL){ render(); }
+else { loadDraft(); render(); }
 </script>
 </body>
 </html>
