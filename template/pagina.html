@@ -39,7 +39,7 @@
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
-button{font:inherit;color:inherit;cursor:pointer}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 button:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 img{max-width:100%}
 
@@ -71,6 +71,7 @@ img{max-width:100%}
 /* ---------- layout ---------- */
 .layout{max-width:1180px;margin:0 auto;padding:24px 20px 60px;display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:40px;align-items:start}
 .tabs{display:none}
+.send-end{display:none}
 @media (max-width:900px){
   .layout{grid-template-columns:minmax(0,1fr);padding-top:12px;gap:16px}
   .tabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
@@ -79,6 +80,15 @@ img{max-width:100%}
   .layout[data-view="feed"] .cal{display:none}
   .layout[data-view="cal"] .phone{display:none}
   .phone{justify-self:center}
+  /* no celular o topo não gruda: antes ocupava ~1/3 da tela o tempo todo */
+  .top{position:static}
+  .top-in{padding:10px 16px;gap:10px 14px}
+  .brand{padding:0}.brand img{height:24px}.brand .sep{display:none}
+  .who{flex:1 1 100%}
+  .who h1{font-size:20px}
+  .prog{flex:1 1 0;max-width:none}
+  .send{padding:10px 14px;flex:none}
+  .send-end{display:block;width:100%;padding:14px}
 }
 
 /* ---------- celular / perfil IG ---------- */
@@ -147,6 +157,7 @@ img{max-width:100%}
 .row .th{width:52px;aspect-ratio:3/4;border-radius:6px;overflow:hidden}
 .row .t b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .row .t span{font-size:13px;color:var(--ink-2)}
+.row .t .c[hidden]{display:none}
 .row .t .c{display:block;font-size:13px;color:var(--fix);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .chip{font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;white-space:nowrap}
 .chip.ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
@@ -156,7 +167,7 @@ img{max-width:100%}
 .note{margin-top:22px;font-size:13px;color:var(--ink-2)}
 
 /* ---------- overlays ---------- */
-.ov{position:fixed;inset:0;z-index:50;background:rgba(6,16,18,.72);display:none;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 16px)}
+.ov{position:fixed;inset:0;z-index:50;overscroll-behavior:contain;background:rgba(6,16,18,.72);display:none;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 16px)}
 .ov.open{display:flex}
 .x{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:22px;line-height:1;z-index:3}
 
@@ -165,8 +176,9 @@ img{max-width:100%}
 .frame{position:relative;width:100%;overflow:hidden;background:#222}
 .r45{aspect-ratio:4/5}
 .r916{aspect-ratio:9/16;max-height:calc(100dvh - 40px);width:auto;height:min(760px,calc(100dvh - 40px))}
-.car .track{display:flex;height:100%;transition:transform .35s ease;touch-action:pan-y}
-.car .slide{flex:0 0 100%;height:100%}
+.car .track{display:flex;height:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.car .track::-webkit-scrollbar{display:none}
+.car .slide{flex:0 0 100%;height:100%;scroll-snap-align:center;scroll-snap-stop:always}
 .arr{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.9);color:#111;display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .arr.l{left:10px}.arr.r{right:10px}
 .arr[hidden]{display:none}
@@ -206,6 +218,10 @@ img{max-width:100%}
   .cap{overflow:visible;flex:none}
   .r916{height:auto;width:100%;max-height:none}
   .media{padding:0}
+  /* bloco em vez de grid: a linha da mídia encolhia e a imagem cobria o topo da legenda */
+  .panel{display:block;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  /* iOS dá zoom na página em campo com fonte < 16px */
+  .decide textarea,.sheet textarea{font-size:16px}
 }
 
 /* stories player */
@@ -304,7 +320,7 @@ img{max-width:100%}
       <p id="p-txt"></p>
       <div class="bar"><i class="o" id="p-ok"></i><i class="f" id="p-fix"></i></div>
     </div>
-    <button class="send" id="btn-send">Enviar respostas</button>
+    <button class="send" id="btn-send" data-send>Enviar respostas</button>
   </div>
 </header>
 <main class="layout" id="layout" data-view="feed">
@@ -344,6 +360,7 @@ img{max-width:100%}
     <p class="note">Cada resposta fica salva na hora. Quando terminar, toque em “Enviar respostas” para avisar a equipe. <span id="sync" class="sync"></span></p>
     <div class="foot-brand"><img class="logo-l" src="/assets/clintia-logo.png" alt="ClintIA"><img class="logo-d" src="/assets/clintia-logo-escuro.png" alt="ClintIA"><span>Aprovação de conteúdo preparada pela equipe ClintIA</span></div>
   </section>
+  <button class="send send-end" data-send>Enviar respostas</button>
 </main>
 
 <div class="ov v" id="ov-view" role="dialog" aria-modal="true" aria-label="Item">
@@ -370,6 +387,8 @@ const BASE = (DATA.midia && DATA.midia.base) || `/c/${DATA.slug}/${DATA.ciclo}-$
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const src = k => /^https?:\/\//.test(k) ? k : BASE + (/\.\w{2,4}$/.test(k) ? k : k + ".jpg");
+// miniatura (360px) para grade, listas e destaques; o visualizador continua com a arte inteira
+const mini = k => (DATA.miniaturas && !/^https?:\/\//.test(k)) ? BASE + "_t/" + (/\.\w{2,4}$/.test(k) ? k : k + ".jpg") : src(k);
 const KEY = `aprov:${DATA.slug}:${DATA.ciclo}`;
 const AUTH = { cliente: DATA.slug, ciclo: DATA.ciclo, token: DATA.token };
 let dec = {}, envios = 0, online = false;
@@ -421,15 +440,16 @@ const ICO = {
   pin:'<svg class="ico pin" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15 3l6 6-3 1-4 4 1 5-2 2-4-4-5 5-1-1 5-5-4-4 2-2 5 1 4-4z"/></svg>'
 };
 const img = (k, cls = "", alt = "") => `<img src="${esc(src(k))}" class="${cls}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
+const imgT = (k, cls = "") => `<img src="${esc(mini(k))}" class="${cls}" alt="" loading="lazy" decoding="async">`;
 const byId = id => ITEMS.find(i => i.id === id);
 const label = it => it.grupo === "feed" ? `Post ${it.num}` : (it.tipo === "bio" ? "Bio" : "Destaque");
 
 function thumb(it) {
-  if (it.tipo === "reels" && it.capa) return img(it.capa);
+  if (it.tipo === "reels" && it.capa) return imgT(it.capa);
   if (it.tipo === "reels") return `<div class="reel-ph"><span>Reels</span><b>${esc(it.titulo.replace(/^Reels: /, ""))}</b></div>`;
-  if (it.tipo === "destaque") return img(it.capa, "round");
-  if (it.tipo === "bio") return img(CONFIG.avatar, "round");
-  return img(it.imgs[0]);
+  if (it.tipo === "destaque") return imgT(it.capa, "round");
+  if (it.tipo === "bio") return imgT(CONFIG.avatar, "round");
+  return imgT(it.imgs[0]);
 }
 
 /* ---------- perfil ---------- */
@@ -441,39 +461,53 @@ function renderStatic() {
   $("#ig-av").src = src(CONFIG.avatar);
   $("#ig-stats").innerHTML = `<div><b>${esc(CONFIG.stats.posts)}</b>posts</div><div><b>${esc(CONFIG.stats.seguidores)}</b>seguidores</div><div><b>${esc(CONFIG.stats.seguindo)}</b>seguindo</div>`;
   $("#ig-hl").innerHTML = ITEMS.filter(i => i.tipo === "destaque").map(it =>
-    `<button type="button" data-story="${it.id}"><span class="ring">${img(it.capa)}</span>${esc(it.rotulo)}</button>`).join("");
+    `<button type="button" data-story="${it.id}"><span class="ring">${imgT(it.capa)}</span>${esc(it.rotulo)}</button>`).join("");
   document.querySelectorAll("[data-story]").forEach(b => b.onclick = () => openStory(b.dataset.story));
+}
+
+// monta grade e listas uma vez só; depois refresh() só troca status (sem recriar imagens)
+function renderLists() {
+  const feed = ITEMS.filter(i => i.grupo === "feed");
+  const pinned = feed.filter(i => i.fixado);
+  const rest = feed.filter(i => !i.fixado).slice().reverse();
+  const tiles = [...pinned, ...rest].map(it =>
+    `<button class="tile" data-open="${it.id}" data-item="${it.id}">${thumb(it)}${it.fixado ? ICO.pin : (ICO[it.tipo] || "")}<span class="dot"></span></button>`);
+  const olds = OLD.map(k => `<div class="tile old" title="Já publicado">${imgT(k)}</div>`);
+  $("#grid").innerHTML = tiles.join("") + olds.join("");
+
+  const row = it => {
+    let sub = TIPO[it.tipo];
+    if (it.tipo === "carrossel") sub += `, ${it.imgs.length} cards`;
+    if (it.tipo === "destaque") sub += `, ${it.imgs.length} stories`;
+    if (it.fixado) sub += ", fixado no topo";
+    return `<button class="row" data-open="${it.id}" data-item="${it.id}">
+      <span class="d">${it.num ? it.num : (it.tipo === "bio" ? "Bio" : "✦")}</span>
+      <span class="th ${it.tipo === "destaque" || it.tipo === "bio" ? "rd" : ""}">${thumb(it)}</span>
+      <span class="t"><b>${esc(it.titulo)}</b><span>${sub}</span><span class="c" hidden></span></span>
+      <span class="chip"></span>
+    </button>`;
+  };
+  $("#rows-perfil").innerHTML = ITEMS.filter(i => i.grupo === "perfil").map(row).join("");
+  $("#rows-feed").innerHTML = feed.map(row).join("");
 }
 
 function renderDynamic() {
   const b = st("bio");
   $("#ig-bio").innerHTML = `<b>${esc(CONFIG.nome)}</b><br>${CONFIG.bio.map(esc).join("<br>")}<br><span class="lk">${esc(CONFIG.link)}</span><span class="bio-tag ${b}">${b === "wait" ? "Nova bio: toque para aprovar" : "Bio: " + LBL[b].toLowerCase()}</span>`;
 
-  const feed = ITEMS.filter(i => i.grupo === "feed");
-  const pinned = feed.filter(i => i.fixado);
-  const rest = feed.filter(i => !i.fixado).slice().reverse();
-  const tiles = [...pinned, ...rest].map(it => {
-    const s = st(it.id);
-    return `<button class="tile" data-open="${it.id}" aria-label="${label(it)}: ${esc(it.titulo)}. ${LBL[s]}">${thumb(it)}${it.fixado ? ICO.pin : (ICO[it.tipo] || "")}<span class="dot ${s}" title="${LBL[s]}"></span></button>`;
+  document.querySelectorAll("[data-item]").forEach(el => {
+    const it = byId(el.dataset.item), s = st(it.id), c = dec[it.id] && dec[it.id].c;
+    if (el.classList.contains("tile")) {
+      const d = el.querySelector(".dot");
+      d.className = `dot ${s}`; d.title = LBL[s];
+      el.setAttribute("aria-label", `${label(it)}: ${it.titulo}. ${LBL[s]}`);
+    } else {
+      const ch = el.querySelector(".chip"), ce = el.querySelector(".c");
+      ch.className = `chip ${s}`; ch.textContent = LBL[s];
+      ce.hidden = !(s === "fix" && c);
+      ce.textContent = ce.hidden ? "" : `“${c}”`;
+    }
   });
-  const olds = OLD.map(k => `<div class="tile old" title="Já publicado">${img(k)}</div>`);
-  $("#grid").innerHTML = tiles.join("") + olds.join("");
-
-  const row = it => {
-    const s = st(it.id), c = dec[it.id] && dec[it.id].c;
-    let sub = TIPO[it.tipo];
-    if (it.tipo === "carrossel") sub += `, ${it.imgs.length} cards`;
-    if (it.tipo === "destaque") sub += `, ${it.imgs.length} stories`;
-    if (it.fixado) sub += ", fixado no topo";
-    return `<button class="row" data-open="${it.id}">
-      <span class="d">${it.num ? it.num : (it.tipo === "bio" ? "Bio" : "✦")}</span>
-      <span class="th ${it.tipo === "destaque" || it.tipo === "bio" ? "rd" : ""}">${thumb(it)}</span>
-      <span class="t"><b>${esc(it.titulo)}</b><span>${sub}</span>${s === "fix" && c ? `<span class="c">“${esc(c)}”</span>` : ""}</span>
-      <span class="chip ${s}">${LBL[s]}</span>
-    </button>`;
-  };
-  $("#rows-perfil").innerHTML = ITEMS.filter(i => i.grupo === "perfil").map(row).join("");
-  $("#rows-feed").innerHTML = feed.map(row).join("");
 
   const tot = ITEMS.length, ok = ITEMS.filter(i => st(i.id) === "ok").length, fx = ITEMS.filter(i => st(i.id) === "fix").length;
   $("#p-txt").innerHTML = `<b>${ok} de ${tot}</b> aprovados${fx ? `, <b>${fx}</b> com ajuste` : ""}`;
@@ -493,7 +527,7 @@ document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
 
 /* ---------- visualizador ---------- */
 let cur = 0, slide = 0, lastFocus = null;
-const lock = on => { document.body.style.overflow = on ? "hidden" : ""; };
+const lock = on => { document.documentElement.style.overflow = document.body.style.overflow = on ? "hidden" : ""; };
 function openView(i) {
   if (i < 0) return;
   lastFocus = document.activeElement;
@@ -527,7 +561,7 @@ function renderView() {
   $("#panel").innerHTML = `
     <div class="media">${mediaHTML(it)}</div>
     <div class="side">
-      <div class="side-h"><div class="av sm"><span>${img(CONFIG.avatar)}</span></div><b>${esc(CONFIG.usuario)}</b><span>${label(it)}, ${TIPO[it.tipo]}</span></div>
+      <div class="side-h"><div class="av sm"><span>${imgT(CONFIG.avatar)}</span></div><b>${esc(CONFIG.usuario)}</b><span>${label(it)}, ${TIPO[it.tipo]}</span></div>
       ${cap}
       <div class="decide">
         <div class="bt">
@@ -542,24 +576,34 @@ function renderView() {
       <nav class="pn"><button type="button" data-nav="-1">Anterior</button><span>${cur + 1} de ${ITEMS.length}</span><button type="button" data-nav="1">Próximo</button></nav>
     </div>`;
 
+  $("#panel").scrollTop = 0;
   $("#panel").querySelectorAll("[data-d]").forEach(b => b.onclick = () => decide(b.dataset.d));
   $("#panel").querySelectorAll("[data-nav]").forEach(b => b.onclick = () => { cur = (cur + +b.dataset.nav + ITEMS.length) % ITEMS.length; slide = 0; renderView(); });
   const fx = $("#fx");
-  if (fx) fx.oninput = () => { dec[it.id] = { s: "fix", c: fx.value }; save(it.id); renderDynamic(); };
+  let tRefresh;
+  if (fx) fx.oninput = () => { dec[it.id] = { s: "fix", c: fx.value }; save(it.id); clearTimeout(tRefresh); tRefresh = setTimeout(renderDynamic, 300); };
   if (it.imgs && it.imgs.length > 1) {
     $("#al").onclick = () => setSlide(slide - 1);
     $("#ar").onclick = () => setSlide(slide + 1);
-    const tr = $("#track"); let x0 = null;
-    tr.addEventListener("pointerdown", e => { x0 = e.clientX; });
-    tr.addEventListener("pointerup", e => { if (x0 == null) return; const dx = e.clientX - x0; if (Math.abs(dx) > 40) setSlide(slide + (dx < 0 ? 1 : -1)); x0 = null; });
-    setSlide(slide);
+    // arrastar é rolagem nativa com snap; aqui só acompanha qual card está na tela
+    const tr = $("#track");
+    tr.addEventListener("scroll", () => {
+      const n = Math.round(tr.scrollLeft / tr.clientWidth);
+      if (n !== slide) { slide = n; markSlide(); }
+    }, { passive: true });
+    markSlide();
   }
-  $("#ov-view .x").focus();
+  $("#ov-view .x").focus({ preventScroll: true });
 }
+const calmo = matchMedia("(prefers-reduced-motion: reduce)");
 function setSlide(n) {
-  const it = ITEMS[cur], max = it.imgs.length - 1;
+  const it = ITEMS[cur], max = it.imgs.length - 1, tr = $("#track");
   slide = Math.max(0, Math.min(max, n));
-  $("#track").style.transform = `translateX(-${slide * 100}%)`;
+  tr.scrollTo({ left: slide * tr.clientWidth, behavior: calmo.matches ? "auto" : "smooth" });
+  markSlide();
+}
+function markSlide() {
+  const max = ITEMS[cur].imgs.length - 1;
   $("#al").hidden = slide === 0; $("#ar").hidden = slide === max;
   $("#dots").querySelectorAll("i").forEach((d, i) => d.classList.toggle("on", i === slide));
   $("#cnt").textContent = `${slide + 1}/${max + 1}`;
@@ -568,8 +612,13 @@ function decide(d) {
   const it = ITEMS[cur];
   if (st(it.id) === d) delete dec[it.id];
   else dec[it.id] = { s: d, c: d === "fix" ? ((dec[it.id] && dec[it.id].c) || "") : "" };
-  save(it.id); renderDynamic(); renderView();
-  if (st(it.id) === "fix") $("#fx").focus();
+  save(it.id); renderDynamic();
+  // só atualiza os botões: recriar o painel recarregava a mídia e pulava a rolagem
+  const s = st(it.id), ok = $('#panel [data-d="ok"]'), fix = $('#panel [data-d="fix"]');
+  ok.classList.toggle("on", s === "ok"); ok.setAttribute("aria-pressed", s === "ok"); ok.textContent = s === "ok" ? "✓ Aprovado" : "Aprovar";
+  fix.classList.toggle("on", s === "fix"); fix.setAttribute("aria-pressed", s === "fix");
+  $("#fixbox").hidden = s !== "fix";
+  if (s === "fix") { $("#fx").value = dec[it.id].c; $("#fx").focus(); }
 }
 
 /* ---------- player de destaques ---------- */
@@ -588,7 +637,7 @@ function showStory(i) {
   sIdx = i;
   $("#player").innerHTML = `
     <div class="segs">${ss.map((_, k) => `<span class="${k < i ? "done" : k === i ? "cur" : ""}"><i></i></span>`).join("")}</div>
-    <div class="ph"><div class="av sm"><span>${img(CONFIG.avatar)}</span></div>${esc(sItem.rotulo)}</div>
+    <div class="ph"><div class="av sm"><span>${imgT(CONFIG.avatar)}</span></div>${esc(sItem.rotulo)}</div>
     <div class="art-host">${img(ss[i], "", `${sItem.titulo}, story ${i + 1}`)}</div>
     <button class="tapl" aria-label="Story anterior"></button><button class="tapr" aria-label="Próximo story"></button>
     <button class="st-open" type="button">Aprovar ou pedir ajuste</button>`;
@@ -609,7 +658,7 @@ function summary() {
   const ok = ITEMS.filter(i => st(i.id) === "ok").length, fx = ITEMS.filter(i => st(i.id) === "fix").length, pd = ITEMS.length - ok - fx;
   return `Aprovação de conteúdo | ${CONFIG.cliente} | ${CONFIG.titulo}\n\n${lines.join("\n")}\n\nAprovados: ${ok}. Ajustes: ${fx}. Pendentes: ${pd}.`;
 }
-$("#btn-send").onclick = async () => {
+function openSend() {
   lastFocus = document.activeElement;
   const txt = summary();
   const pend = ITEMS.filter(i => st(i.id) === "wait").length;
@@ -646,7 +695,8 @@ $("#btn-send").onclick = async () => {
   };
   $("#ov-send").classList.add("open"); lock(true);
   $("#go").focus();
-};
+}
+document.querySelectorAll("[data-send]").forEach(b => b.onclick = openSend);
 
 function closeAll() {
   clearTimeout(sTimer);
@@ -671,6 +721,7 @@ document.addEventListener("keydown", e => {
 });
 
 renderStatic();
+renderLists();
 renderDynamic();
 carregar();
 </script>

@@ -3,6 +3,8 @@
 const fs = require("fs");
 const path = require("path");
 const { gerar } = require("./lib/token");
+let sharp = null;
+try { sharp = require("sharp"); } catch (e) { console.warn("! sharp indisponível: fotos vão sem compressão"); }
 
 const RAIZ = __dirname;
 const PUB = path.join(RAIZ, "public");
@@ -15,8 +17,33 @@ fs.rmSync(path.join(PUB, "painel"), { recursive: true, force: true });
 
 const erros = [];
 const ciclos = [];
+// Comprime as fotos da saída (originais do repositório ficam intactos) e gera miniaturas em midia/_t/
+// para a grade e as listas, que antes baixavam a arte inteira. Só substitui se ficar menor.
+async function otimizar(midia) {
+  if (!sharp || !fs.existsSync(midia)) return false;
+  const tdir = path.join(midia, "_t");
+  fs.mkdirSync(tdir, { recursive: true });
+  let antes = 0, depois = 0;
+  for (const nome of fs.readdirSync(midia)) {
+    if (!/\.(jpe?g|png)$/i.test(nome)) continue;
+    const arq = path.join(midia, nome), orig = fs.readFileSync(arq);
+    antes += orig.length;
+    const jpg = /\.jpe?g$/i.test(nome);
+    if (jpg) {
+      const novo = await sharp(orig).rotate().jpeg({ quality: 75, mozjpeg: true }).toBuffer();
+      if (novo.length < orig.length) fs.writeFileSync(arq, novo);
+    }
+    depois += fs.statSync(arq).size;
+    const img = sharp(orig).rotate().resize({ width: 360, withoutEnlargement: true });
+    await (jpg ? img.jpeg({ quality: 72, mozjpeg: true }) : img.png()).toFile(path.join(tdir, nome));
+  }
+  console.log(`  fotos: ${(antes / 1048576).toFixed(1)} MB → ${(depois / 1048576).toFixed(1)} MB, miniaturas em midia/_t/`);
+  return true;
+}
+
 const pastas = d => fs.readdirSync(d, { withFileTypes: true }).filter(e => e.isDirectory() && !e.name.startsWith("_")).map(e => e.name);
 
+(async () => {
 for (const cliente of pastas(path.join(RAIZ, "clientes"))) {
   if (!SLUG.test(cliente)) { erros.push(`Pasta "${cliente}": use só letras minúsculas, números e hífen`); continue; }
   for (const ciclo of pastas(path.join(RAIZ, "clientes", cliente))) {
@@ -52,8 +79,9 @@ for (const cliente of pastas(path.join(RAIZ, "clientes"))) {
     const saida = path.join(PUB, "c", cliente, `${ciclo}-${token}`);
     fs.mkdirSync(saida, { recursive: true });
     if (fs.existsSync(midiaDir)) fs.cpSync(midiaDir, path.join(saida, "midia"), { recursive: true });
+    const miniaturas = !usaBase && await otimizar(path.join(saida, "midia"));
 
-    const payload = { ...dados, slug: cliente, ciclo, token };
+    const payload = { ...dados, slug: cliente, ciclo, token, miniaturas };
     const html = TPL.replace("__DATA__", JSON.stringify(payload).replace(/</g, "\\u003c"));
     fs.writeFileSync(path.join(saida, "index.html"), html);
 
@@ -71,3 +99,4 @@ if (erros.length) {
   process.exit(1);
 }
 console.log(`\n${ciclos.length} página(s) gerada(s).`);
+})().catch(e => { console.error(e); process.exit(1); });
