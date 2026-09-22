@@ -3,8 +3,12 @@
   "outputDirectory": "public",
   "cleanUrls": true,
   "functions": {
-    "api/painel.js": { "includeFiles": "lib/ciclos.json" }
+    "api/painel.js": { "includeFiles": "lib/ciclos.json" },
+    "api/pagina.js": { "includeFiles": "template/pagina.html" }
   },
+  "rewrites": [
+    { "source": "/c/:cliente/:cicloToken", "destination": "/api/pagina?cliente=:cliente&cicloToken=:cicloToken" }
+  ],
   "headers": [
     {
       "source": "/(.*)",

@@ -10,7 +10,18 @@ module.exports = async (req, res) => {
     return res.status(401).json({ erro: "Senha incorreta" });
   }
   try {
-    const ciclos = JSON.parse(fs.readFileSync(path.join(process.cwd(), "lib", "ciclos.json"), "utf8"));
+    // ciclos do GitHub (assados pelo build) + ciclos do banco (criados pelo painel)
+    let ciclos = [];
+    try { ciclos = JSON.parse(fs.readFileSync(path.join(process.cwd(), "lib", "ciclos.json"), "utf8")).map(x => ({ ...x, origem: "github" })); } catch (e) {}
+    try {
+      const c = await db().execute("SELECT cliente, ciclo, nome, titulo, total FROM ciclos");
+      const chaves = new Set(ciclos.map(x => `${x.cliente}/${x.ciclo}`));
+      c.rows.forEach(r => {
+        const k = `${r.cliente}/${r.ciclo}`;
+        if (!chaves.has(k)) ciclos.push({ cliente: r.cliente, ciclo: r.ciclo, nome: r.nome, titulo: r.titulo, total: Number(r.total), origem: "banco" });
+      });
+    } catch (e) { console.error("tabela ciclos:", e.message); }
+
     const d = await db().execute(
       "SELECT cliente, ciclo, status, COUNT(*) AS n, MAX(atualizado_em) AS ult FROM decisoes GROUP BY cliente, ciclo, status"
     );

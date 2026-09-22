@@ -27,8 +27,10 @@ aprovacao-clintia/
 
 ### 2. Turso
 1. No painel do Turso, crie um banco chamado `aprovacao-clintia` (mesma conta do QR Placas serve).
-2. Abra o banco → **Edit Data / SQL console**, cole o conteúdo de `db/schema.sql` e rode.
+2. Abra o banco → **Edit Data / SQL console**, cole o conteúdo de `db/schema.sql` e rode. (Cria as tabelas de aprovações, envios e — pro "Adicionar cliente" do painel — de conteúdo e fotos.)
 3. Copie a **URL do banco** (`libsql://...`) e gere um **token** (Create Token).
+
+> **Já tinha esse projeto no ar antes do painel salvar clientes?** Rode o `db/schema.sql` de novo no SQL console. Ele usa `CREATE TABLE IF NOT EXISTS`, então não apaga nada — só cria as tabelas novas (`ciclos`, `midias`) que faltavam.
 
 ### 3. Vercel
 1. Add New → Project → importe `aprovacao-clintia`.
@@ -62,6 +64,27 @@ O Zapier recebe: `cliente`, `ciclo`, `titulo`, `rodada`, `resumo`, `link`.
 `https://SEU-DOMINIO/painel` → senha do `ADMIN_PASSWORD`. Mostra todos os ciclos, quanto já foi aprovado, ajustes pedidos, quantas rodadas o cliente enviou e o link pra copiar.
 
 ## Rotina: novo cliente ou novo ciclo
+
+### Jeito fácil: adicionar pelo painel (recomendado, sem GitHub, sem código)
+
+No painel (`https://SEU-DOMINIO/painel`), clique em **+ Adicionar cliente**. Abre o montador.
+
+1. Preencha os campos (cliente, bio, posts, legendas) e **arraste as fotos** de cada post.
+2. Confira a prévia da grade ali na hora.
+3. Clique em **Salvar no painel**. O montador comprime as fotos no navegador, salva tudo no Turso e o **link já funciona na hora**.
+4. Pronto: o cliente aparece no painel. Copie o link e mande.
+
+Para mexer num cliente depois (ajustes pós-comentário), use **Editar** na linha dele; para tirar do ar, **Remover**. Editar/Remover só aparecem nos clientes criados pelo painel — os que vieram do GitHub (ver abaixo) continuam como estão.
+
+> Precisa da variável `GITHUB`? **Não.** Esse caminho grava no Turso, não no GitHub. Só exige `ADMIN_PASSWORD`, `TURSO_*` e `TOKEN_SECRET` (que você já configurou na montagem). Vídeo de reels: cole o **link** (Cloudinary/Drive) no campo do post — vídeo não vai pro banco.
+
+O montador não precisa de IA nem de editar JSON, salva seu rascunho de texto no navegador, e valida antes de salvar (avisa se faltar foto, título, etc.).
+
+### Jeito arquivo: montador → zip → GitHub (alternativa)
+
+O montador tem também **Baixar pacote (.zip)**: gera o `dados.json` + as fotos já nomeadas pra você subir no GitHub (`Add file → Upload files`, arraste a pasta `clientes`, Commit). Serve como backup ou se preferir versionar no repositório. A Vercel publica em ~1 min.
+
+### Jeito manual (editando o arquivo à mão)
 
 1. Crie a pasta `clientes/<cliente>/<ciclo>/` (só minúsculas, números e hífen: `clinica-bem-viver/2026-10`).
 2. Copie o `dados.json` de `_modelo` e preencha.

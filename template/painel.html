@@ -72,6 +72,7 @@ function render() {
         <option value="ajustes">Com ajuste pedido</option>
       </select>
       <button class="sec" id="rel">Atualizar</button>
+      <button id="novo">+ Adicionar cliente</button>
       <small>${dados.length} ciclo(s) publicados</small>
     </div>
     <div class="tbl"><table>
@@ -85,16 +86,31 @@ function render() {
           <td><span class="tag ${cls}">${txt}</span></td>
           <td>${c.envios}${c.envios ? `<br><small>${quando(c.ultimoEnvio)}</small>` : ""}</td>
           <td>${quando(c.ultimaAcao)}</td>
-          <td><a href="${esc(c.link)}" target="_blank" rel="noopener">Abrir</a> · <a href="#" data-copy="${esc(location.origin + c.link)}">Copiar</a></td>
+          <td><a href="${esc(c.link)}" target="_blank" rel="noopener">Abrir</a> · <a href="#" data-copy="${esc(location.origin + c.link)}">Copiar</a>${c.origem === "banco" ? ` · <a href="#" data-edit="${esc(c.cliente)}|${esc(c.ciclo)}">Editar</a> · <a href="#" data-del="${esc(c.cliente)}|${esc(c.ciclo)}" style="color:var(--fix)">Remover</a>` : ""}</td>
         </tr>`;
       }).join("") || `<tr><td colspan="7">Nenhum ciclo neste filtro.</td></tr>`}</tbody>
     </table></div>`;
   $("#filtro").value = f;
   $("#filtro").onchange = render;
   $("#rel").onclick = carregar;
+  $("#novo").onclick = () => { sessionStorage.setItem("montador:pw", senha); location.href = "/montador?painel=1"; };
   document.querySelectorAll("[data-copy]").forEach(a => a.onclick = async e => {
     e.preventDefault();
     try { await navigator.clipboard.writeText(a.dataset.copy); a.textContent = "Copiado"; } catch (err) { prompt("Copie o link:", a.dataset.copy); }
+  });
+  document.querySelectorAll("[data-edit]").forEach(a => a.onclick = e => {
+    e.preventDefault();
+    const [cliente, ciclo] = a.dataset.edit.split("|");
+    sessionStorage.setItem("montador:pw", senha);
+    location.href = `/montador?painel=1&cliente=${encodeURIComponent(cliente)}&ciclo=${encodeURIComponent(ciclo)}`;
+  });
+  document.querySelectorAll("[data-del]").forEach(a => a.onclick = async e => {
+    e.preventDefault();
+    const [cliente, ciclo] = a.dataset.del.split("|");
+    if (!confirm(`Remover "${cliente} / ${ciclo}" do painel? As fotos e o conteúdo saem do banco. As respostas do cliente ficam guardadas.`)) return;
+    const r = await fetch(`/api/ciclo?cliente=${encodeURIComponent(cliente)}&ciclo=${encodeURIComponent(ciclo)}`, { method: "DELETE", headers: { "x-admin-password": senha } });
+    if (!r.ok) { alert("Não consegui remover. Tente de novo."); return; }
+    carregar();
   });
 }
 async function carregar() {
