@@ -2,7 +2,7 @@
 // POST /api/midia  (x-admin-password)  { cliente, ciclo, midias:[{nome, mime, b64}] }  -> grava as fotos.
 const db = require("../lib/db");
 const { valido } = require("../lib/token");
-const { SLUG, MIDIA, admin } = require("../lib/ciclo");
+const { SLUG, MIDIA, admin, garantirTabelas } = require("../lib/ciclo");
 
 module.exports = async (req, res) => {
   try {
@@ -28,6 +28,7 @@ module.exports = async (req, res) => {
       const midias = Array.isArray(p.midias) ? p.midias : [];
       if (!midias.length) return res.status(400).json({ erro: "Nenhuma foto" });
 
+      await garantirTabelas();
       const stmts = [];
       for (const m of midias) {
         if (!MIDIA.test(String(m.nome || ""))) return res.status(400).json({ erro: `Nome inválido: ${m.nome}` });
@@ -48,6 +49,6 @@ module.exports = async (req, res) => {
     return res.status(405).end();
   } catch (err) {
     console.error(err);
-    return res.status(500).end(req.method === "GET" ? "Erro" : JSON.stringify({ erro: "Falha na mídia" }));
+    return res.status(500).end(req.method === "GET" ? "Erro" : JSON.stringify({ erro: "Falha na mídia: " + (err.message || err) }));
   }
 };
