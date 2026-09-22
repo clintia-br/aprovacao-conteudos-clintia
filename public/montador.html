@@ -78,6 +78,50 @@ textarea{resize:vertical;min-height:80px}
 .pv-grid .cell .tag{position:absolute;top:3px;right:4px;font-size:9px;background:rgba(0,0,0,.55);color:#fff;padding:1px 5px;border-radius:99px}
 .pv-grid .cell.empty{display:grid;place-items:center;color:var(--ink-2);font-size:20px}
 .pv-grid .cell.old{filter:grayscale(.3) opacity(.7)}
+/* prévia fiel da página do cliente */
+.pvx{display:grid;grid-template-columns:330px minmax(0,1fr);gap:26px;align-items:start}
+@media (max-width:760px){.pvx{grid-template-columns:1fr}}
+.pvx-phone{border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff;color:#0a0a0a;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 20px 50px -32px rgba(5,30,50,.45)}
+.pvx-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 6px;font-weight:700;font-size:15px}
+.pvx-prof{display:flex;align-items:center;gap:18px;padding:6px 14px}
+.pvx-av{flex:none;width:64px;height:64px;border-radius:50%;padding:3px;background:conic-gradient(from 200deg,#F58529,#DD2A7B,#8134AF,#F58529)}
+.pvx-av>span{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;overflow:hidden;background:#e6eef7;border:2px solid #fff;color:#b8c6d6;font-size:11px}
+.pvx-av img{width:100%;height:100%;object-fit:cover;display:block}
+.pvx-stats{flex:1;display:flex;justify-content:space-around;text-align:center;font-size:12.5px}
+.pvx-stats b{display:block;font-size:16px}
+.pvx-name{font-weight:700;padding:6px 14px 0;font-size:14px}
+.pvx-bio{padding:2px 14px 0;font-size:13.5px;line-height:1.35;white-space:pre-line}
+.pvx-link{color:#00376b;font-weight:600}
+.pvx-tag{display:inline-block;margin-top:7px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:color-mix(in srgb,var(--wait) 18%,transparent);color:var(--wait)}
+.pvx-btns{display:flex;gap:6px;padding:10px 14px}
+.pvx-btns span{flex:1;text-align:center;background:#efefef;border-radius:8px;padding:6px;font-weight:600;font-size:13px}
+.pvx-hl{display:flex;gap:14px;padding:2px 14px 12px;overflow-x:auto;scrollbar-width:none}
+.pvx-hl::-webkit-scrollbar{display:none}
+.pvx-hl>div{flex:none;width:58px;text-align:center;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pvx-hl .ring{width:56px;height:56px;border-radius:50%;border:1px solid #dbdbdb;overflow:hidden;background:#e6eef7;margin:0 auto 4px}
+.pvx-hl .ring img{width:100%;height:100%;object-fit:cover;display:block}
+.pvx-tabs{display:flex;border-top:1px solid #dbdbdb}
+.pvx-tabs span{flex:1;text-align:center;padding:8px 0;color:#737373;font-size:15px}
+.pvx-tabs span.on{color:#0a0a0a;box-shadow:inset 0 -1px 0 #0a0a0a}
+.pvx-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.pvx-tiles .t{position:relative;aspect-ratio:3/4;background:#e6eef7;overflow:hidden;display:grid;place-items:center;color:#b8c6d6;font-size:20px}
+.pvx-tiles .t img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pvx-tiles .t.old{filter:grayscale(.3) opacity(.7)}
+.pvx-tiles .t .ic{position:absolute;top:4px;right:6px;color:#fff;font-size:12px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6));z-index:1}
+.pvx-tiles .t .dot{position:absolute;left:6px;bottom:6px;width:9px;height:9px;border-radius:50%;background:var(--wait);border:2px solid #fff;z-index:1}
+.pvx-list h3{color:var(--accent);text-transform:uppercase;font-size:18px;margin:0 0 6px}
+.pvx-list .lead{color:var(--ink-2);font-size:13px;margin:0 0 8px}
+.pvx-grp{font-weight:700;color:var(--ink-2);font-size:14px;margin:16px 0 8px}
+.pvx-row{display:grid;grid-template-columns:44px 44px minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px 8px 8px;margin-bottom:8px}
+.pvx-row .num{font-weight:900;color:var(--yale);text-align:center;font-size:17px}
+.pvx-row .th{width:44px;aspect-ratio:3/4;border-radius:6px;overflow:hidden;background:#e6eef7}
+.pvx-row .th.rd{aspect-ratio:1;border-radius:50%}
+.pvx-row .th img{width:100%;height:100%;object-fit:cover;display:block}
+.pvx-row .tt{min-width:0}
+.pvx-row .tt b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pvx-row .tt span{font-size:12.5px;color:var(--ink-2)}
+.pvx-row .chip{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap;background:color-mix(in srgb,var(--wait) 18%,transparent);color:var(--wait)}
+.pvx-empty{color:var(--ink-2);font-size:13px;padding:6px 0}
 /* barra fixa */
 .bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -6px 20px -12px rgba(5,30,50,.4);z-index:10}
 .bar-in{max-width:1000px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -180,9 +224,9 @@ summary{cursor:pointer;font-weight:700;font-size:13px;color:var(--accent)}
 
   <!-- PREVIEW -->
   <section class="card">
-    <h2>6. Prévia da grade</h2>
-    <p class="sub">Como o feed vai aparecer no topo do perfil (posts novos primeiro, publicados em cinza no fim).</p>
-    <div class="pv-grid" id="pv-grid"></div>
+    <h2>6. Prévia da página do cliente</h2>
+    <p class="sub">Exatamente como o cliente vai ver o link. Vai preenchendo conforme você monta.</p>
+    <div class="pvx" id="pv"></div>
   </section>
 
   <p class="foot">Montador interno ClintIA · nenhuma foto sai do seu navegador até você baixar o pacote.</p>
@@ -316,7 +360,7 @@ function renderFeed(){
     if(window.PANEL){ el.querySelector("[data-vidfile]").dataset.only="__none__"; } // no painel, vídeo só por link
     el.querySelectorAll("[data-k]").forEach(inp=>{
       const k=inp.dataset.k;
-      inp.oninput=()=>{ p[k]= inp.type==="checkbox"?inp.checked:inp.value; if(k==="tipo"){applyOnly(el,p.tipo);render();} if(k==="titulo"){el.querySelector(".ttl").textContent=p.titulo||"sem título";} saveDraft(); if(k==="tipo")renderThumbs(); };
+      inp.oninput=()=>{ p[k]= inp.type==="checkbox"?inp.checked:inp.value; if(k==="tipo"){applyOnly(el,p.tipo);render();} if(k==="titulo"){el.querySelector(".ttl").textContent=p.titulo||"sem título";} saveDraft(); if(k==="tipo")renderThumbs(); else refreshPv(); };
     });
     el.querySelector("[data-rm]").onclick=()=>{ state.feed.splice(i,1); render(); };
     el.querySelectorAll("[data-mv]").forEach(b=>b.onclick=()=>{ const j=i+ +b.dataset.mv; if(j>=0&&j<state.feed.length){[state.feed[j],state.feed[i]]=[state.feed[i],state.feed[j]];render();} });
@@ -351,7 +395,7 @@ function renderDest(){
       </div>`;
     el.querySelector('[data-k="rotulo"]').value=x.rotulo;
     el.querySelector('[data-k="titulo"]').value=x.titulo;
-    el.querySelectorAll("[data-k]").forEach(inp=>{ const k=inp.dataset.k; inp.oninput=()=>{ x[k]=inp.value; if(k==="rotulo")el.querySelector(".ttl").textContent=x.rotulo||"sem nome"; saveDraft(); }; });
+    el.querySelectorAll("[data-k]").forEach(inp=>{ const k=inp.dataset.k; inp.oninput=()=>{ x[k]=inp.value; if(k==="rotulo")el.querySelector(".ttl").textContent=x.rotulo||"sem nome"; saveDraft(); refreshPv(); }; });
     el.querySelector("[data-rm]").onclick=()=>{ state.dest.splice(i,1); render(); };
     el.querySelectorAll("[data-mv]").forEach(b=>b.onclick=()=>{ const j=i+ +b.dataset.mv; if(j>=0&&j<state.dest.length){[state.dest[j],state.dest[i]]=[state.dest[i],state.dest[j]];render();} });
     wireDrop(el.querySelector("[data-capadrop]"), files=>{ const im=files.find(f=>f.type.startsWith("image")); if(im){x.capa=mk(im);renderThumbs();render();} });
@@ -361,26 +405,67 @@ function renderDest(){
   renderThumbs();
 }
 
-/* ---------- prévia da grade ---------- */
+/* ---------- prévia fiel da página do cliente ---------- */
+const TIPO_PV = { imagem:"Post", carrossel:"Carrossel", reels:"Reels (roteiro)" };
 function renderPreview(){
-  const g=$("#pv-grid"); g.innerHTML="";
+  const g=id=>$("#"+id).value.trim(), e=escapeHtml, ph="<span style='color:#b8c6d6'>&hellip;</span>";
   const feed=state.feed;
-  const pinned=feed.map((p,i)=>({p,i})).filter(o=>o.p.fixado);
-  const rest=feed.map((p,i)=>({p,i})).filter(o=>!o.p.fixado).reverse();
+
+  // ---- coluna 1: perfil estilo Instagram ----
+  const av = state.avatar ? `<span><img src="${state.avatar.url}"></span>` : "<span>foto</span>";
+  const bio = g("bio") ? e(g("bio")) : "";
+  const link = g("link") ? `<div class="pvx-link">${e(g("link"))}</div>` : "";
+  const bioTag = $("#incluirBio").checked ? `<span class="pvx-tag">Nova bio: toque para aprovar</span>` : "";
+  const hl = state.dest.map(x=>`<div><div class="ring">${x.capa?`<img src="${x.capa.url}">`:""}</div>${e(x.rotulo||"destaque")}</div>`).join("");
+  const pinned=feed.filter(p=>p.fixado), rest=feed.filter(p=>!p.fixado).slice().reverse();
   const ordered=[...pinned,...rest];
-  ordered.forEach(({p})=>{
-    const c=document.createElement("div"); c.className="cell";
-    const cover = p.tipo==="reels" ? (p.imgs[0]||p.video) : p.imgs[0];
-    if(cover && cover.file.type.startsWith("image")) c.innerHTML=`<img src="${cover.url}">`;
-    else if(p.tipo==="reels") c.innerHTML=`<div class="cell empty">▶</div>`;
-    else c.innerHTML=`<div class="cell empty">＋</div>`;
-    const tag=p.tipo==="carrossel"?"❐":p.tipo==="reels"?"▶":p.fixado?"📌":"";
-    if(tag) c.innerHTML+=`<span class="tag">${tag}</span>`;
-    g.append(c);
+  const tile=p=>{
+    const ic = p.fixado?"📌":p.tipo==="carrossel"?"❐":p.tipo==="reels"?"▶":"";
+    const inner = p.imgs[0] ? `<img src="${p.imgs[0].url}">` : (p.tipo==="reels"?"▶":"＋");
+    return `<div class="t">${inner}${ic?`<span class="ic">${ic}</span>`:""}<span class="dot"></span></div>`;
+  };
+  let tiles = ordered.map(tile).join("") + state.publicados.map(pb=>`<div class="t old"><img src="${pb.url}"></div>`).join("");
+  if(!ordered.length && !state.publicados.length) tiles = "＋＋＋＋＋＋".split("").map(()=>`<div class="t">＋</div>`).join("");
+
+  const phone = `<div class="pvx-phone">
+    <div class="pvx-bar"><span>${g("usuario")?e(g("usuario")):ph}</span><span>≡</span></div>
+    <div class="pvx-prof"><div class="pvx-av">${av}</div>
+      <div class="pvx-stats"><div><b>${e(g("s_posts")||"0")}</b>posts</div><div><b>${e(g("s_seg")||"0")}</b>seguidores</div><div><b>${e(g("s_seg2")||"0")}</b>seguindo</div></div></div>
+    <div class="pvx-name">${g("nome")?e(g("nome")):ph}</div>
+    <div class="pvx-bio">${bio}${link}${bioTag}</div>
+    <div class="pvx-btns"><span>Seguir</span><span>Enviar mensagem</span></div>
+    ${hl?`<div class="pvx-hl">${hl}</div>`:`<div class="pvx-hl"><div><div class="ring"></div>destaque</div></div>`}
+    <div class="pvx-tabs"><span class="on">▦</span><span>▷</span><span>☺</span></div>
+    <div class="pvx-tiles">${tiles}</div>
+  </div>`;
+
+  // ---- coluna 2: lista de aprovação ----
+  const row=(num,th,rd,titulo,sub)=>`<div class="pvx-row"><span class="num">${num}</span><span class="th ${rd?"rd":""}">${th}</span><span class="tt"><b>${e(titulo)}</b><span>${e(sub)}</span></span><span class="chip">Pendente</span></div>`;
+  let perfil="";
+  if($("#incluirBio").checked) perfil += row("Bio", state.avatar?`<img src="${state.avatar.url}">`:"", true, "Nova bio do perfil", "Bio");
+  state.dest.forEach(x=> perfil += row("✦", x.capa?`<img src="${x.capa.url}">`:"", true, x.titulo||("Destaque: "+(x.rotulo||"")), `Destaque, ${x.imgs.length} stories`));
+  let feedRows="";
+  feed.forEach((p,i)=>{
+    let sub = TIPO_PV[p.tipo] || "Post";
+    if(p.tipo==="carrossel") sub = `Carrossel, ${p.imgs.length} cards`;
+    if(p.fixado) sub += ", fixado no topo";
+    const th = p.imgs[0] ? `<img src="${p.imgs[0].url}">` : "";
+    feedRows += row(String(i+1).padStart(2,"0"), th, false, p.titulo||"(sem título)", sub);
   });
-  state.publicados.forEach(pb=>{ const c=document.createElement("div"); c.className="cell old"; c.innerHTML=`<img src="${pb.url}">`; g.append(c); });
-  if(!g.children.length) g.innerHTML=`<div class="cell empty">＋</div><div class="cell empty">＋</div><div class="cell empty">＋</div>`;
+
+  const lista = `<div class="pvx-list">
+    <h3>O que precisa da sua aprovação</h3>
+    <p class="lead">Toque em cada item para ver completo e aprovar ou pedir ajuste.</p>
+    <div class="pvx-grp">Perfil e destaques</div>
+    ${perfil || `<div class="pvx-empty">Marque "bio nova" ou adicione destaques.</div>`}
+    <div class="pvx-grp">Posts do feed, na ordem de publicação</div>
+    ${feedRows || `<div class="pvx-empty">Adicione posts na seção 3.</div>`}
+  </div>`;
+
+  $("#pv").innerHTML = phone + lista;
 }
+const debounce=(fn,ms)=>{let t;return()=>{clearTimeout(t);t=setTimeout(fn,ms);};};
+const refreshPv=debounce(renderPreview,180);
 
 /* ---------- render geral + status ---------- */
 function render(){ renderFeed(); renderDest(); renderPreview(); updateStatus(); saveDraft(); }
@@ -496,8 +581,8 @@ async function download(){
 /* ---------- eventos globais ---------- */
 $("#cliente").addEventListener("input",()=>{ const s=$("#slug"); if(!s.dataset.touched) s.value=slugify($("#cliente").value); saveDraft(); });
 $("#slug").addEventListener("input",e=>e.target.dataset.touched="1");
-TXT.concat("incluirBio").forEach(id=>$("#"+id).addEventListener("input",saveDraft));
-$("#incluirBio").addEventListener("change",saveDraft);
+TXT.concat("incluirBio").forEach(id=>$("#"+id).addEventListener("input",()=>{saveDraft();refreshPv();}));
+$("#incluirBio").addEventListener("change",()=>{saveDraft();refreshPv();});
 $("#add-feed").onclick=()=>{ state.feed.push({tipo:"imagem",titulo:"",legenda:"",fixado:false,roteiro:"",videoUrl:"",imgs:[],video:null}); render(); };
 $("#add-dest").onclick=()=>{ state.dest.push({rotulo:"",titulo:"",capa:null,imgs:[]}); render(); };
 $("#btn-download").onclick=download;
