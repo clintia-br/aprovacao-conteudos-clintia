@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Montador de aprovação | ClintIA</title>
-<link rel="icon" href="/assets/clintia-logo.png">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -79,18 +79,19 @@ textarea{resize:vertical;min-height:80px}
 .pv-grid .cell.empty{display:grid;place-items:center;color:var(--ink-2);font-size:20px}
 .pv-grid .cell.old{filter:grayscale(.3) opacity(.7)}
 /* prévia fiel da página do cliente */
-.pvx{display:grid;grid-template-columns:330px minmax(0,1fr);gap:26px;align-items:start}
-@media (max-width:760px){.pvx{grid-template-columns:1fr}}
-.pvx-phone{border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff;color:#0a0a0a;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 20px 50px -32px rgba(5,30,50,.45)}
+/* desktop: lista à esquerda (menor) + Instagram à direita (maior) */
+.pvx{display:grid;grid-template-columns:minmax(0,320px) 460px;justify-content:start;gap:30px;align-items:start}
+@media (max-width:940px){.pvx{grid-template-columns:1fr}}
+.pvx-phone{max-width:460px;border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff;color:#0a0a0a;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 20px 50px -32px rgba(5,30,50,.45)}
 .pvx-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 6px;font-weight:700;font-size:15px}
 .pvx-prof{display:flex;align-items:center;gap:18px;padding:6px 14px}
-.pvx-av{flex:none;width:64px;height:64px;border-radius:50%;padding:3px;background:conic-gradient(from 200deg,#F58529,#DD2A7B,#8134AF,#F58529)}
+.pvx-av{flex:none;width:80px;height:80px;border-radius:50%;padding:3px;background:conic-gradient(from 200deg,#F58529,#DD2A7B,#8134AF,#F58529)}
 .pvx-av>span{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;overflow:hidden;background:#e6eef7;border:2px solid #fff;color:#b8c6d6;font-size:11px}
 .pvx-av img{width:100%;height:100%;object-fit:cover;display:block}
-.pvx-stats{flex:1;display:flex;justify-content:space-around;text-align:center;font-size:12.5px}
-.pvx-stats b{display:block;font-size:16px}
-.pvx-name{font-weight:700;padding:6px 14px 0;font-size:14px}
-.pvx-bio{padding:2px 14px 0;font-size:13.5px;line-height:1.35;white-space:pre-line}
+.pvx-stats{flex:1;display:flex;justify-content:space-around;text-align:center;font-size:13.5px}
+.pvx-stats b{display:block;font-size:18px}
+.pvx-name{font-weight:700;padding:8px 16px 0;font-size:15px}
+.pvx-bio{padding:2px 16px 0;font-size:14px;line-height:1.4;white-space:pre-line}
 .pvx-link{color:#00376b;font-weight:600}
 .pvx-tag{display:inline-block;margin-top:7px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:color-mix(in srgb,var(--wait) 18%,transparent);color:var(--wait)}
 .pvx-btns{display:flex;gap:6px;padding:10px 14px}
@@ -118,7 +119,7 @@ textarea{resize:vertical;min-height:80px}
 .pvx-row .th.rd{aspect-ratio:1;border-radius:50%}
 .pvx-row .th img{width:100%;height:100%;object-fit:cover;display:block}
 .pvx-row .tt{min-width:0}
-.pvx-row .tt b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pvx-row .tt b{display:block;font-size:14px;line-height:1.25}
 .pvx-row .tt span{font-size:12.5px;color:var(--ink-2)}
 .pvx-row .chip{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap;background:color-mix(in srgb,var(--wait) 18%,transparent);color:var(--wait)}
 .pvx-empty{color:var(--ink-2);font-size:13px;padding:6px 0}
@@ -462,7 +463,7 @@ function renderPreview(){
     ${feedRows || `<div class="pvx-empty">Adicione posts na seção 3.</div>`}
   </div>`;
 
-  $("#pv").innerHTML = phone + lista;
+  $("#pv").innerHTML = lista + phone;
 }
 const debounce=(fn,ms)=>{let t;return()=>{clearTimeout(t);t=setTimeout(fn,ms);};};
 const refreshPv=debounce(renderPreview,180);
