@@ -171,10 +171,13 @@ img{max-width:100%}
 .ov.open{display:flex}
 .x{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:22px;line-height:1;z-index:3}
 
-.panel{background:var(--ig-bg);color:var(--ig-fg);border-radius:18px;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 360px;width:min(980px,100%);max-height:100%}
-.media{background:#111;display:grid;place-items:center;min-height:0;padding:0}
+/* linha limitada à altura da tela: sem isso, legenda longa esticava o painel e cortava os botões de aprovar */
+.panel{background:var(--ig-bg);color:var(--ig-fg);border-radius:18px;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-rows:minmax(0,1fr);width:min(980px,100%);max-height:100%}
+.media{background:#111;display:grid;place-items:center;min-height:0;padding:0;overflow:hidden}
 .frame{position:relative;width:100%;overflow:hidden;background:#222}
 .r45{aspect-ratio:4/5}
+/* tela baixa: a arte 4:5 encolhe pela altura em vez de ser cortada em cima e embaixo */
+@media (min-width:821px){.media .r45{width:min(100%,calc((100dvh - 32px) * 4 / 5))}}
 .r916{aspect-ratio:9/16;max-height:calc(100dvh - 40px);width:auto;height:min(760px,calc(100dvh - 40px))}
 .car .track{display:flex;height:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .car .track::-webkit-scrollbar{display:none}
@@ -195,7 +198,8 @@ img{max-width:100%}
 .reel .rb i{display:block;height:100%;width:0;background:#fff}
 .reel .rt{position:absolute;right:12px;bottom:12px;color:#fff;font-size:12px;font-weight:600;background:rgba(0,0,0,.45);padding:3px 8px;border-radius:6px}
 
-.side{display:flex;flex-direction:column;min-height:0;border-left:1px solid var(--ig-line)}
+.side{display:flex;flex-direction:column;min-height:0;overflow-y:auto;border-left:1px solid var(--ig-line)}
+.side-h,.decide,.pn,.cfm{flex:none}
 .side-h{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--ig-line)}
 .side-h b{font-size:14px}
 .side-h span{margin-left:auto;font-size:12px;color:var(--ig-mute)}
