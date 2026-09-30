@@ -45,3 +45,22 @@ CREATE TABLE IF NOT EXISTS midias (
   dados   BLOB NOT NULL,
   PRIMARY KEY (cliente, ciclo, nome)
 );
+
+-- Caixa de fotos do botão "Subir fotos" do painel: artes e fotos que a equipe/designer
+-- manda pra um cliente/ciclo. Comprimidas no navegador antes de subir (JPG até 2160 px),
+-- com miniatura. Vistas no painel e na galeria /fotos/<cliente>/<ciclo>/<código>.
+CREATE TABLE IF NOT EXISTS fotos (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  cliente    TEXT NOT NULL,
+  ciclo      TEXT NOT NULL,
+  pasta      TEXT NOT NULL DEFAULT '',   -- subpasta de onde veio ("destaques/quem sou")
+  nome       TEXT NOT NULL,              -- nome original do arquivo
+  mime       TEXT NOT NULL,
+  largura    INTEGER NOT NULL DEFAULT 0,
+  altura     INTEGER NOT NULL DEFAULT 0,
+  tamanho    INTEGER NOT NULL DEFAULT 0,
+  dados      BLOB NOT NULL,
+  mini       BLOB,
+  enviado_em TEXT NOT NULL,
+  UNIQUE (cliente, ciclo, pasta, nome)   -- mesmo nome na mesma pasta = versão nova, substitui
+);

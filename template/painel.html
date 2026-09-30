@@ -25,7 +25,7 @@ button.sec{background:var(--card);color:var(--ink);border:1px solid var(--line)}
 .err{color:var(--fix);font-weight:600;min-height:1.2em;margin:0}
 .bar{display:flex;gap:10px;align-items:center;margin:8px 0 18px;flex-wrap:wrap}
 .tbl{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
-table{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
+table{border-collapse:collapse;width:100%;min-width:860px;font-size:14px}
 th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
 th{background:var(--card);font-weight:700;color:var(--ink-2);font-size:13px}
 tr:last-child td{border-bottom:0}
@@ -35,6 +35,31 @@ tr:last-child td{border-bottom:0}
 .t-ok{background:#1F8A5522;color:var(--ok)}.t-fix{background:#C73B3B1f;color:var(--fix)}.t-wait{background:#B57A0E22;color:var(--wait)}.t-new{background:var(--card);color:var(--ink-2)}
 small{color:var(--ink-2)}
 a{color:var(--dodger);font-weight:600}
+button:disabled{opacity:.5;cursor:default}
+/* Subir fotos */
+.modal{position:fixed;inset:0;background:#051E3299;display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto;z-index:50}
+.box{background:#fff;border-radius:16px;max-width:880px;width:100%;padding:20px;display:grid;gap:12px}
+.mh{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.mh h2{margin:0;font-weight:900;color:var(--dodger);text-transform:uppercase;font-size:20px}
+.x{background:var(--card);color:var(--ink);border:1px solid var(--line);padding:6px 11px}
+.lb{font-weight:700;font-size:14px;margin-bottom:-6px}
+.novo{display:grid;grid-template-columns:1fr 1fr;gap:8px}.novo[hidden]{display:none}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:26px 16px;text-align:center;display:grid;gap:6px;background:var(--card);cursor:pointer}
+.drop.on{border-color:var(--dodger);background:#0578DC14}
+.lnk{background:none;color:var(--dodger);padding:0;border:0;font-weight:700;text-decoration:underline}
+.pg.big{width:100%;height:10px;margin:6px 0}
+.lista{margin:6px 0;padding-left:18px;font-size:13px;color:var(--ink-2);max-height:120px;overflow:auto}
+.aviso{margin:6px 0;font-weight:600}.aviso.ok{color:var(--ok)}.aviso.er{color:var(--fix)}
+.gal-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px;margin:0}
+.gal h3{font-size:13px;color:var(--ink-2);margin:14px 0 8px}
+.gal .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.gal figure{margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.gal img{width:100%;aspect-ratio:4/5;object-fit:contain;background:#fff;display:block}
+.gal figcaption{font-size:11px;padding:5px 6px;display:flex;gap:4px;align-items:center}
+.gal figcaption span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gal figcaption a,.gal figcaption button{background:none;border:0;padding:0 3px;color:var(--dodger);font-weight:700;cursor:pointer;font-size:13px;text-decoration:none}
+.gal figcaption button{color:var(--fix)}
+@media (max-width:560px){.novo{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -54,6 +79,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const quando = iso => iso ? new Date(iso).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) : "—";
 let senha = sessionStorage.getItem("painel-pw") || "";
 let dados = [];
+let fotosResumo = {}; // "cliente/ciclo" -> { n, bytes, ult, k }
 
 function situacao(c) {
   if (!c.aprovados && !c.ajustes && !c.envios) return ["t-new", "Não aberto"];
@@ -73,10 +99,11 @@ function render() {
       </select>
       <button class="sec" id="rel">Atualizar</button>
       <button id="novo">+ Adicionar cliente</button>
+      <button id="subir">Subir fotos</button>
       <small>${dados.length} ciclo(s) publicados</small>
     </div>
     <div class="tbl"><table>
-      <thead><tr><th>Cliente</th><th>Ciclo</th><th>Progresso</th><th>Situação</th><th>Rodadas enviadas</th><th>Última atividade</th><th>Link</th></tr></thead>
+      <thead><tr><th>Cliente</th><th>Ciclo</th><th>Progresso</th><th>Situação</th><th>Rodadas enviadas</th><th>Última atividade</th><th>Fotos</th><th>Link</th></tr></thead>
       <tbody>${lista.map(c => {
         const [cls, txt] = situacao(c);
         return `<tr>
@@ -86,14 +113,21 @@ function render() {
           <td><span class="tag ${cls}">${txt}</span></td>
           <td>${c.envios}${c.envios ? `<br><small>${quando(c.ultimoEnvio)}</small>` : ""}</td>
           <td>${quando(c.ultimaAcao)}</td>
+          <td>${fotosResumo[c.cliente + "/" + c.ciclo] ? `${fotosResumo[c.cliente + "/" + c.ciclo].n} foto(s)<br>` : ""}<a href="#" data-fotos="${esc(c.cliente)}|${esc(c.ciclo)}">Subir fotos</a></td>
           <td><a href="${esc(c.link)}" target="_blank" rel="noopener">Abrir</a> · <a href="#" data-copy="${esc(location.origin + c.link)}">Copiar</a>${c.origem === "banco" ? ` · <a href="#" data-edit="${esc(c.cliente)}|${esc(c.ciclo)}">Editar</a> · <a href="#" data-del="${esc(c.cliente)}|${esc(c.ciclo)}" style="color:var(--fix)">Remover</a>` : ""}</td>
         </tr>`;
-      }).join("") || `<tr><td colspan="7">Nenhum ciclo neste filtro.</td></tr>`}</tbody>
+      }).join("") || `<tr><td colspan="8">Nenhum ciclo neste filtro.</td></tr>`}</tbody>
     </table></div>`;
   $("#filtro").value = f;
   $("#filtro").onchange = render;
   $("#rel").onclick = carregar;
   $("#novo").onclick = () => { sessionStorage.setItem("montador:pw", senha); location.href = "/montador?painel=1"; };
+  $("#subir").onclick = () => abrirFotos();
+  document.querySelectorAll("[data-fotos]").forEach(a => a.onclick = e => {
+    e.preventDefault();
+    const [cliente, ciclo] = a.dataset.fotos.split("|");
+    abrirFotos(cliente, ciclo);
+  });
   document.querySelectorAll("[data-copy]").forEach(a => a.onclick = async e => {
     e.preventDefault();
     try { await navigator.clipboard.writeText(a.dataset.copy); a.textContent = "Copiado"; } catch (err) { prompt("Copie o link:", a.dataset.copy); }
@@ -118,7 +152,260 @@ async function carregar() {
   if (r.status === 401) { sessionStorage.removeItem("painel-pw"); location.reload(); return; }
   if (!r.ok) { $("#app").innerHTML = `<p class="err">Não foi possível carregar o painel. Tente de novo em instantes.</p>`; return; }
   dados = (await r.json()).ciclos;
+  await carregarResumo();
   render();
+}
+async function carregarResumo() {
+  try {
+    const r = await fetch("/api/fotos?resumo=1", { headers: { "x-admin-password": senha } });
+    if (!r.ok) return;
+    fotosResumo = {};
+    (await r.json()).destinos.forEach(d => { fotosResumo[d.cliente + "/" + d.ciclo] = d; });
+  } catch (e) {}
+}
+/* ================= Subir fotos ================= */
+// Cada foto é comprimida aqui no navegador (JPG até 2160 px + miniatura) e sobe numa
+// requisição própria, porque a Vercel corta corpo acima de 4,5 MB. Assim um envio de
+// até 150 MB de originais (PNG pesado do designer) cabe sem erro.
+const LIMITE = 150 * 1048576;
+const MAX_FOTO = 2900000; // em base64 + miniatura fica abaixo dos 4,5 MB da Vercel
+const IMG = /\.(jpe?g|png|webp|gif|bmp|avif|heic|heif)$/i;
+const mb = b => (b / 1048576).toFixed(1).replace(".", ",") + " MB";
+const slug = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+const naturais = (a, b) => a.localeCompare(b, "pt-BR", { numeric: true });
+let fila = [], ignorados = 0, enviando = false;
+
+function destinos() {
+  const m = new Map();
+  dados.forEach(c => m.set(c.cliente + "/" + c.ciclo, { v: c.cliente + "/" + c.ciclo, rot: `${c.nome} · ${c.ciclo}` }));
+  Object.values(fotosResumo).forEach(d => {
+    const v = d.cliente + "/" + d.ciclo;
+    if (!m.has(v)) m.set(v, { v, rot: `${d.cliente} · ${d.ciclo}` });
+  });
+  return [...m.values()];
+}
+function destinoAtual() {
+  const v = $("#dest").value;
+  if (v !== "__novo") { const [cliente, ciclo] = v.split("/"); return { cliente, ciclo }; }
+  const cliente = slug($("#nd-cli").value), ciclo = slug($("#nd-cic").value);
+  return cliente && ciclo ? { cliente, ciclo } : null;
+}
+
+function abrirFotos(cliente, ciclo) {
+  fila = []; ignorados = 0;
+  const ds = destinos();
+  const m = document.createElement("div");
+  m.className = "modal"; m.id = "modal";
+  m.innerHTML = `<div class="box" role="dialog" aria-modal="true" aria-labelledby="mt">
+    <div class="mh"><h2 id="mt">Subir fotos</h2><button class="x" id="fechar" aria-label="Fechar">✕</button></div>
+    <label class="lb" for="dest">Pra qual cliente?</label>
+    <select id="dest">${ds.map(d => `<option value="${esc(d.v)}">${esc(d.rot)}</option>`).join("")}<option value="__novo">+ Outro cliente…</option></select>
+    <div id="novo-dest" class="novo" hidden>
+      <input id="nd-cli" placeholder="Cliente (ex.: clinica-bem-viver)" autocomplete="off" aria-label="Cliente">
+      <input id="nd-cic" placeholder="Pasta (ex.: 2026-10)" autocomplete="off" aria-label="Pasta">
+    </div>
+    <div class="drop" id="drop" tabindex="0" role="button" aria-label="Escolher fotos">
+      <b>Arraste as fotos ou pastas inteiras aqui</b>
+      <span>ou <button type="button" class="lnk" id="esc-f">escolha fotos</button> · <button type="button" class="lnk" id="esc-p">escolha uma pasta</button></span>
+      <small>Até 150 MB por envio · JPG, PNG ou WEBP · as subpastas viram a organização</small>
+      <input type="file" id="in-f" accept="image/*" multiple hidden>
+      <input type="file" id="in-p" webkitdirectory multiple hidden>
+    </div>
+    <div id="fila"></div>
+    <div id="gal" class="gal"></div>
+  </div>`;
+  document.body.appendChild(m);
+  document.body.style.overflow = "hidden";
+
+  const sel = $("#dest");
+  sel.value = cliente ? cliente + "/" + ciclo : (ds[0] ? ds[0].v : "__novo");
+  if (!sel.value) sel.value = "__novo";
+  const trocou = () => { $("#novo-dest").hidden = sel.value !== "__novo"; carregarGaleria(); };
+  sel.onchange = trocou;
+  $("#nd-cli").onchange = $("#nd-cic").onchange = carregarGaleria;
+  trocou();
+
+  const teclas = e => { if (e.key === "Escape") fechar(); };
+  const fechar = () => {
+    if (enviando && !confirm("Ainda está enviando. Fechar agora interrompe o envio. Fechar mesmo assim?")) return;
+    enviando = false;
+    m.remove();
+    document.body.style.overflow = "";
+    document.removeEventListener("keydown", teclas);
+    render();
+  };
+  document.addEventListener("keydown", teclas);
+  $("#fechar").onclick = fechar;
+  m.onclick = e => { if (e.target === m) fechar(); };
+
+  const drop = $("#drop");
+  drop.onclick = e => { if (e.target.closest("button")) return; $("#in-f").click(); };
+  drop.onkeydown = e => { if (e.target === drop && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); $("#in-f").click(); } };
+  $("#esc-f").onclick = () => $("#in-f").click();
+  $("#esc-p").onclick = () => $("#in-p").click();
+  $("#in-f").onchange = e => { adicionar([...e.target.files].map(f => ({ file: f, pasta: "" }))); e.target.value = ""; };
+  $("#in-p").onchange = e => {
+    adicionar([...e.target.files].map(f => ({ file: f, pasta: (f.webkitRelativePath || "").split("/").slice(0, -1).join("/") })));
+    e.target.value = "";
+  };
+  drop.ondragover = e => { e.preventDefault(); drop.classList.add("on"); };
+  drop.ondragleave = () => drop.classList.remove("on");
+  drop.ondrop = async e => {
+    e.preventDefault();
+    drop.classList.remove("on");
+    // pega as entradas já: o navegador invalida o arrasto depois do primeiro await
+    const entradas = [...(e.dataTransfer.items || [])].map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
+    const soltos = [...e.dataTransfer.files];
+    if (!entradas.length) return adicionar(soltos.map(f => ({ file: f, pasta: "" })));
+    const out = [];
+    for (const en of entradas) await lerEntrada(en, "", out);
+    adicionar(out);
+  };
+}
+async function lerEntrada(en, pasta, out) {
+  if (en.isFile) {
+    out.push({ file: await new Promise((ok, er) => en.file(ok, er)), pasta });
+  } else if (en.isDirectory) {
+    const leitor = en.createReader(), dentro = pasta ? pasta + "/" + en.name : en.name;
+    let lote;
+    do {
+      lote = await new Promise((ok, er) => leitor.readEntries(ok, er));
+      for (const x of lote) await lerEntrada(x, dentro, out);
+    } while (lote.length);
+  }
+}
+function adicionar(itens) {
+  if (enviando) return;
+  const ja = new Set(fila.map(i => i.pasta + "/" + i.file.name + "/" + i.file.size));
+  itens.forEach(i => {
+    const n = i.file.name;
+    if (n.startsWith(".") || /^thumbs\.db$/i.test(n)) return;
+    if (!(i.file.type || "").startsWith("image/") && !IMG.test(n)) { ignorados++; return; }
+    const k = i.pasta + "/" + n + "/" + i.file.size;
+    if (!ja.has(k)) { ja.add(k); fila.push(i); }
+  });
+  fila.sort((a, b) => naturais(a.pasta, b.pasta) || naturais(a.file.name, b.file.name));
+  mostrarFila();
+}
+function mostrarFila(msg) {
+  const total = fila.reduce((s, i) => s + i.file.size, 0), passou = total > LIMITE;
+  $("#fila").innerHTML = (msg || "") + (fila.length ? `
+    <div><b>${fila.length} foto(s) · ${mb(total)}</b> <small>de 150 MB</small> · <button type="button" class="lnk" id="limpar">limpar</button></div>
+    <div class="pg big"><i class="${passou ? "f" : "o"}" style="width:${Math.min(100, total / LIMITE * 100)}%"></i></div>
+    ${passou ? `<p class="aviso er">Passou de 150 MB. Tire algumas fotos ou envie em duas vezes.</p>` : ""}
+    <ul class="lista">${fila.map(i => `<li>${esc(i.pasta ? i.pasta + "/" : "")}${esc(i.file.name)} <small>${mb(i.file.size)}</small></li>`).join("")}</ul>
+    <button id="enviar" ${passou ? "disabled" : ""}>Enviar ${fila.length} foto(s)</button>` : "")
+    + (ignorados ? `<p class="aviso er">${ignorados} arquivo(s) ignorado(s): não são imagem (vídeo, PDF...).</p>` : "");
+  if (!fila.length) return;
+  $("#limpar").onclick = () => { fila = []; ignorados = 0; mostrarFila(); };
+  $("#enviar").onclick = enviar;
+}
+
+async function prepararFoto(file) {
+  let bmp;
+  try { bmp = await createImageBitmap(file, { imageOrientation: "from-image" }); }
+  catch (e) {
+    try { bmp = await createImageBitmap(file); }
+    catch (e2) { throw new Error(/hei[cf]/i.test(file.type + file.name) ? "HEIC não abre no navegador, exporte em JPG" : "formato não suportado"); }
+  }
+  const W = bmp.width, H = bmp.height;
+  const desenhar = (max, q) => {
+    const s = Math.min(1, max / Math.max(W, H)), w = Math.max(1, Math.round(W * s)), h = Math.max(1, Math.round(H * s));
+    const c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    const x = c.getContext("2d");
+    x.fillStyle = "#fff"; x.fillRect(0, 0, w, h); // PNG transparente vira fundo branco
+    x.drawImage(bmp, 0, 0, w, h);
+    return new Promise(ok => c.toBlob(b => ok({ b, w, h }), "image/jpeg", q));
+  };
+  let foto;
+  if (file.type === "image/jpeg" && file.size <= MAX_FOTO && Math.max(W, H) <= 2160) foto = { b: file, w: W, h: H }; // JPG leve vai original
+  else {
+    foto = await desenhar(2160, 0.88);
+    if (foto.b.size > MAX_FOTO) foto = await desenhar(2160, 0.75);
+    if (foto.b.size > MAX_FOTO) foto = await desenhar(1600, 0.75);
+  }
+  const mini = await desenhar(400, 0.72);
+  if (bmp.close) bmp.close();
+  return { foto, mini };
+}
+const toB64 = blob => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.readAsDataURL(blob); });
+
+async function subirUma(d, it) {
+  const { foto, mini } = await prepararFoto(it.file);
+  const corpo = JSON.stringify({
+    cliente: d.cliente, ciclo: d.ciclo, pasta: it.pasta, nome: it.file.name.replace(/\.[^.]+$/, "") + ".jpg",
+    largura: foto.w, altura: foto.h, b64: await toB64(foto.b), mini: await toB64(mini.b)
+  });
+  for (let tentativa = 0; ; tentativa++) {
+    let r;
+    try { r = await fetch("/api/fotos", { method: "POST", headers: { "Content-Type": "application/json", "x-admin-password": senha }, body: corpo }); }
+    catch (e) { if (tentativa < 2) continue; throw new Error("sem conexão"); }
+    if (r.ok) return;
+    if (r.status === 401) throw new Error("senha do painel expirou, entre de novo");
+    if (r.status >= 500 && tentativa < 2) continue;
+    const j = await r.json().catch(() => ({}));
+    throw new Error(j.erro || `erro ${r.status}`);
+  }
+}
+async function enviar() {
+  const d = destinoAtual();
+  if (!d) { mostrarFila(`<p class="aviso er">Preencha o cliente e a pasta antes de enviar.</p>`); return; }
+  enviando = true;
+  const total = fila.length, lista = [...fila], erros = [];
+  let feitas = 0;
+  $("#fila").innerHTML = `<div><b id="prog-t">Enviando 0/${total}…</b> <small>não feche esta janela</small></div><div class="pg big"><i class="o" id="prog" style="width:0"></i></div>`;
+  const trabalhador = async () => {
+    while (lista.length && enviando) {
+      const it = lista.shift();
+      try { await subirUma(d, it); } catch (e) { erros.push(`${it.pasta ? it.pasta + "/" : ""}${it.file.name}: ${e.message}`); }
+      feitas++;
+      if (!$("#prog")) return;
+      $("#prog").style.width = (feitas / total * 100) + "%";
+      $("#prog-t").textContent = `Enviando ${feitas}/${total}…`;
+    }
+  };
+  await Promise.all([trabalhador(), trabalhador(), trabalhador()]);
+  if (!$("#modal")) return;
+  enviando = false;
+  fila = []; ignorados = 0;
+  mostrarFila(erros.length
+    ? `<p class="aviso er">${total - erros.length} de ${total} enviada(s). Não subiram:</p><ul class="lista">${erros.map(e => `<li>${esc(e)}</li>`).join("")}</ul>`
+    : `<p class="aviso ok">Pronto: ${total} foto(s) enviada(s) pra ${esc(d.cliente)} / ${esc(d.ciclo)}.</p>`);
+  await carregarResumo();
+  carregarGaleria();
+}
+
+async function carregarGaleria() {
+  const g = $("#gal"), d = destinoAtual();
+  if (!g) return;
+  if (!d) { g.innerHTML = `<p class="gal-top"><small>Digite o cliente e a pasta pra ver o que já foi enviado.</small></p>`; return; }
+  g.innerHTML = `<p class="gal-top"><small>Carregando fotos já enviadas…</small></p>`;
+  const r = await fetch(`/api/fotos?cliente=${encodeURIComponent(d.cliente)}&ciclo=${encodeURIComponent(d.ciclo)}`, { headers: { "x-admin-password": senha } }).catch(() => null);
+  if (!r || !r.ok) { g.innerHTML = `<p class="gal-top aviso er">Não consegui carregar as fotos já enviadas.</p>`; return; }
+  const { k, fotos } = await r.json();
+  const base = `/api/fotos?cliente=${d.cliente}&ciclo=${d.ciclo}&k=${k}`;
+  const url = (f, x = "") => `${base}&id=${f.id}&v=${encodeURIComponent(f.enviado_em)}${x}`;
+  const linkGaleria = `${location.origin}/fotos/${d.cliente}/${d.ciclo}/${k}`;
+  const grupos = {};
+  fotos.forEach(f => (grupos[f.pasta] = grupos[f.pasta] || []).push(f));
+  g.innerHTML = `<div class="gal-top"><b>Já enviadas (${fotos.length})</b>${fotos.length ? `<span><a href="${esc(linkGaleria)}" target="_blank" rel="noopener">Abrir galeria</a> · <a href="#" id="cp-gal">Copiar link da galeria</a></span>` : ""}</div>`
+    + (fotos.length ? "" : `<small>Nada enviado pra ${esc(d.cliente)} / ${esc(d.ciclo)} ainda.</small>`)
+    + Object.keys(grupos).map(p => `<h3>${esc(p || "Sem pasta")} (${grupos[p].length})</h3><div class="grid">${grupos[p].map(f => `
+      <figure><a href="${esc(url(f))}" target="_blank" rel="noopener"><img loading="lazy" src="${esc(url(f, "&mini=1"))}" alt="${esc(f.nome)}"></a>
+      <figcaption><span title="${esc(f.nome)} · ${f.largura}×${f.altura}">${esc(f.nome)}</span><a href="${esc(url(f, "&baixar=1"))}" aria-label="Baixar ${esc(f.nome)}">↓</a><button type="button" data-apagar="${f.id}" aria-label="Apagar ${esc(f.nome)}">✕</button></figcaption></figure>`).join("")}</div>`).join("");
+  const cp = $("#cp-gal");
+  if (cp) cp.onclick = async e => {
+    e.preventDefault();
+    try { await navigator.clipboard.writeText(linkGaleria); cp.textContent = "Copiado"; } catch (err) { prompt("Copie o link:", linkGaleria); }
+  };
+  g.querySelectorAll("[data-apagar]").forEach(b => b.onclick = async () => {
+    if (!confirm("Apagar esta foto da caixa? Não dá pra desfazer.")) return;
+    const r = await fetch(`/api/fotos?cliente=${encodeURIComponent(d.cliente)}&ciclo=${encodeURIComponent(d.ciclo)}&id=${b.dataset.apagar}`, { method: "DELETE", headers: { "x-admin-password": senha } });
+    if (!r.ok) { alert("Não consegui apagar. Tente de novo."); return; }
+    await carregarResumo();
+    carregarGaleria();
+  });
 }
 $("#login").onsubmit = async e => {
   e.preventDefault();
@@ -127,6 +414,7 @@ $("#login").onsubmit = async e => {
   if (!r.ok) { $("#err").textContent = r.status === 401 ? "Senha incorreta." : "Erro ao conectar."; return; }
   sessionStorage.setItem("painel-pw", senha);
   dados = (await r.json()).ciclos;
+  await carregarResumo();
   render();
 };
 if (senha) carregar();
