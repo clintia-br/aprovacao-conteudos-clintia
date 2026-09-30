@@ -455,6 +455,12 @@ const ICO = {
 const img = (k, cls = "", alt = "") => `<img src="${esc(src(k))}" class="${cls}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
 const imgT = (k, cls = "") => `<img src="${esc(mini(k))}" class="${cls}" alt="" loading="lazy" decoding="async">`;
 const byId = id => ITEMS.find(i => i.id === id);
+// data de publicação ("2026-10-01") -> "qui, 01/10"
+const DIAS = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+const dataTxt = it => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(it.data || "");
+  return m ? `${DIAS[new Date(+m[1], m[2] - 1, +m[3]).getDay()]}, ${m[3]}/${m[2]}` : "";
+};
 const label = it => it.grupo === "feed" ? `Post ${it.num}` : (it.tipo === "bio" ? "Bio" : "Destaque");
 
 function thumb(it) {
@@ -493,6 +499,7 @@ function renderLists() {
     if (it.tipo === "carrossel") sub += `, ${it.imgs.length} cards`;
     if (it.tipo === "destaque") sub += `, ${it.imgs.length} stories`;
     if (it.fixado) sub += ", fixado no topo";
+    if (dataTxt(it)) sub = `${dataTxt(it)} · ${sub}`;
     return `<button class="row" data-open="${it.id}" data-item="${it.id}">
       <span class="d">${it.num ? it.num : (it.tipo === "bio" ? "Bio" : "✦")}</span>
       <span class="th ${it.tipo === "destaque" || it.tipo === "bio" ? "rd" : ""}">${thumb(it)}</span>
@@ -591,7 +598,7 @@ function renderView() {
   $("#panel").innerHTML = `
     <div class="media">${mediaHTML(it)}</div>
     <div class="side">
-      <div class="side-h"><div class="av sm"><span>${imgT(CONFIG.avatar)}</span></div><b>${esc(CONFIG.usuario)}</b><span>${label(it)}, ${TIPO[it.tipo]}</span></div>
+      <div class="side-h"><div class="av sm"><span>${imgT(CONFIG.avatar)}</span></div><b>${esc(CONFIG.usuario)}</b><span>${label(it)}, ${TIPO[it.tipo]}${dataTxt(it) ? ` · ${dataTxt(it)}` : ""}</span></div>
       ${cap}
       <div class="decide">
         <div class="bt">
