@@ -1,4 +1,4 @@
-// GET  /api/decisoes?cliente=&ciclo=&token=   -> decisões salvas + nº de envios
+// GET  /api/decisoes?cliente=&ciclo=&token=   -> decisões salvas + nº de envios + quando a equipe limpou as considerações
 // POST /api/decisoes { cliente, ciclo, token, item, status, comentario }
 const db = require("../lib/db");
 const { valido } = require("../lib/token");
@@ -17,7 +17,13 @@ module.exports = async (req, res) => {
         sql: "SELECT COUNT(*) AS n FROM envios WHERE cliente = ? AND ciclo = ?",
         args: [p.cliente, p.ciclo]
       });
-      return res.json({ decisoes: d.rows, envios: Number(e.rows[0].n) });
+      // "Limpar considerações" do painel: a página usa isso pra não reenviar o que ficou guardado no aparelho
+      let zerado = null;
+      try {
+        const z = await db().execute({ sql: "SELECT zerado_em FROM zerados WHERE cliente = ? AND ciclo = ?", args: [p.cliente, p.ciclo] });
+        if (z.rows.length) zerado = z.rows[0].zerado_em;
+      } catch (err) { /* tabela ainda não criada: ninguém limpou nada */ }
+      return res.json({ decisoes: d.rows, envios: Number(e.rows[0].n), zerado });
     }
 
     if (req.method === "POST") {

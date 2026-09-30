@@ -114,7 +114,7 @@ function render() {
           <td>${c.envios}${c.envios ? `<br><small>${quando(c.ultimoEnvio)}</small>` : ""}</td>
           <td>${quando(c.ultimaAcao)}</td>
           <td>${fotosResumo[c.cliente + "/" + c.ciclo] ? `${fotosResumo[c.cliente + "/" + c.ciclo].n} foto(s)<br>` : ""}<a href="#" data-fotos="${esc(c.cliente)}|${esc(c.ciclo)}">Subir fotos</a></td>
-          <td><a href="${esc(c.link)}" target="_blank" rel="noopener">Abrir</a> · <a href="#" data-copy="${esc(location.origin + c.link)}">Copiar</a>${c.origem === "banco" ? ` · <a href="#" data-edit="${esc(c.cliente)}|${esc(c.ciclo)}">Editar</a> · <a href="#" data-del="${esc(c.cliente)}|${esc(c.ciclo)}" style="color:var(--fix)">Remover</a>` : ""}</td>
+          <td><a href="${esc(c.link)}" target="_blank" rel="noopener">Abrir</a> · <a href="#" data-copy="${esc(location.origin + c.link)}">Copiar</a>${c.ajustes ? ` · <a href="#" data-limpar="${esc(c.cliente)}|${esc(c.ciclo)}|${c.ajustes}">Limpar considerações</a>` : ""}${c.origem === "banco" ? ` · <a href="#" data-edit="${esc(c.cliente)}|${esc(c.ciclo)}">Editar</a> · <a href="#" data-del="${esc(c.cliente)}|${esc(c.ciclo)}" style="color:var(--fix)">Remover</a>` : ""}</td>
         </tr>`;
       }).join("") || `<tr><td colspan="8">Nenhum ciclo neste filtro.</td></tr>`}</tbody>
     </table></div>`;
@@ -137,6 +137,14 @@ function render() {
     const [cliente, ciclo] = a.dataset.edit.split("|");
     sessionStorage.setItem("montador:pw", senha);
     location.href = `/montador?painel=1&cliente=${encodeURIComponent(cliente)}&ciclo=${encodeURIComponent(ciclo)}`;
+  });
+  document.querySelectorAll("[data-limpar]").forEach(a => a.onclick = async e => {
+    e.preventDefault();
+    const [cliente, ciclo, n] = a.dataset.limpar.split("|");
+    if (!confirm(`Limpar as considerações de "${cliente} / ${ciclo}"?\n\nOs ${n} pedido(s) de ajuste e os comentários do cliente somem, e esses itens voltam pra Pendente pro cliente revisar de novo. As aprovações ficam. Não dá pra desfazer.`)) return;
+    const r = await fetch("/api/limpar", { method: "POST", headers: { "Content-Type": "application/json", "x-admin-password": senha }, body: JSON.stringify({ cliente, ciclo }) });
+    if (!r.ok) { alert("Não consegui limpar. Tente de novo."); return; }
+    carregar();
   });
   document.querySelectorAll("[data-del]").forEach(a => a.onclick = async e => {
     e.preventDefault();

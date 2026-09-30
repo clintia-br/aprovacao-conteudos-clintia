@@ -137,5 +137,6 @@ As fotos ficam no Turso (tabela `fotos`, criada sozinha no 1º uso). Elas **não
 ## Dúvidas comuns
 - **O cliente respondeu no celular e depois abriu no computador?** Tudo aparece igual: as respostas ficam no banco, não no aparelho.
 - **Caiu a internet dele no meio?** A página guarda no aparelho e sobe sozinha quando ele abrir de novo com conexão.
+- **Fiz os ajustes que o cliente pediu. Como peço pra ele revisar de novo?** No painel, **Limpar considerações** na linha do cliente (só aparece quando tem ajuste pedido). Os pedidos de ajuste e os comentários somem, esses itens voltam pra *Pendente* e as aprovações ficam. O mesmo link continua valendo. O que ficou guardado no celular dele também é descartado, então não volta sozinho. Não dá pra desfazer: se precisar do texto dos comentários, copie antes (vêm na task do ClickUp de cada rodada).
 - **Quero refazer um ciclo depois dos ajustes?** Edite as artes/legendas na mesma pasta e faça commit. O link continua o mesmo e as aprovações anteriores ficam (o cliente vê o que já aprovou). Pra zerar, crie um ciclo novo (`2026-10-v2`).
 - **Domínio próprio:** em Vercel → Settings → Domains, adicione `aprovacao.clintia.com.br`. Links antigos em `.vercel.app` continuam funcionando.
