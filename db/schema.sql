@@ -62,5 +62,16 @@ CREATE TABLE IF NOT EXISTS fotos (
   dados      BLOB NOT NULL,
   mini       BLOB,
   enviado_em TEXT NOT NULL,
+  obs        TEXT NOT NULL DEFAULT '',   -- "O que é" digitado no envio (pra onde vai a arte)
+  usada_em   TEXT,                       -- quando o Claude aplicou no site (NULL = nova)
   UNIQUE (cliente, ciclo, pasta, nome)   -- mesmo nome na mesma pasta = versão nova, substitui
+);
+
+-- "Limpar considerações" do painel: quando a equipe apagou os pedidos de ajuste do ciclo.
+-- A página do cliente compara com o que guardou no aparelho pra não reenviar considerações velhas.
+CREATE TABLE IF NOT EXISTS zerados (
+  cliente   TEXT NOT NULL,
+  ciclo     TEXT NOT NULL,
+  zerado_em TEXT NOT NULL,
+  PRIMARY KEY (cliente, ciclo)
 );

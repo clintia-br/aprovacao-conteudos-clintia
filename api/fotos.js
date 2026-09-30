@@ -4,7 +4,7 @@
 // GET    /api/fotos?cliente=&ciclo=&k=              -> galeria (quem tem o link vê e baixa)
 // GET    /api/fotos?cliente=&ciclo=&k=&formato=json -> lista em JSON
 // GET    /api/fotos?cliente=&ciclo=&k=&id=[&mini=1][&baixar=1] -> a foto
-// POST   /api/fotos  (x-admin-password)  { cliente, ciclo, pasta, nome, largura, altura, b64, mini } -> grava 1 foto
+// POST   /api/fotos  (x-admin-password)  { cliente, ciclo, pasta, nome, obs, largura, altura, b64, mini } -> grava 1 foto
 // DELETE /api/fotos?cliente=&ciclo=&id=  (x-admin-password)
 // Uma foto por requisição: a Vercel corta corpo acima de 4,5 MB, então o painel comprime antes.
 const db = require("../lib/db");
@@ -18,13 +18,13 @@ const ordenar = (a, b) => a.pasta.localeCompare(b.pasta, "pt-BR", { numeric: tru
 
 async function listar(cliente, ciclo) {
   const r = await db().execute({
-    sql: `SELECT id, pasta, nome, largura, altura, tamanho, enviado_em FROM fotos
+    sql: `SELECT id, pasta, nome, obs, largura, altura, tamanho, enviado_em, usada_em FROM fotos
           WHERE cliente = ? AND ciclo = ?`,
     args: [cliente, ciclo]
   });
   return r.rows.map(x => ({
-    id: Number(x.id), pasta: x.pasta, nome: x.nome, largura: Number(x.largura), altura: Number(x.altura),
-    tamanho: Number(x.tamanho), enviado_em: x.enviado_em
+    id: Number(x.id), pasta: x.pasta, nome: x.nome, obs: x.obs || "", largura: Number(x.largura), altura: Number(x.altura),
+    tamanho: Number(x.tamanho), enviado_em: x.enviado_em, usada_em: x.usada_em || null
   })).sort(ordenar);
 }
 
@@ -36,9 +36,10 @@ module.exports = async (req, res) => {
     if (req.method === "GET" && q.resumo) {
       if (!admin(req)) return res.status(401).json({ erro: "Senha do painel incorreta" });
       const r = await db().execute(
-        "SELECT cliente, ciclo, COUNT(*) AS n, SUM(tamanho) AS bytes, MAX(enviado_em) AS ult FROM fotos GROUP BY cliente, ciclo"
+        `SELECT cliente, ciclo, COUNT(*) AS n, SUM(usada_em IS NULL) AS novas, SUM(tamanho) AS bytes, MAX(enviado_em) AS ult
+         FROM fotos GROUP BY cliente, ciclo`
       );
-      return res.json({ destinos: r.rows.map(x => ({ cliente: x.cliente, ciclo: x.ciclo, n: Number(x.n), bytes: Number(x.bytes), ult: x.ult, k: tokenFotos(x.cliente, x.ciclo) })) });
+      return res.json({ destinos: r.rows.map(x => ({ cliente: x.cliente, ciclo: x.ciclo, n: Number(x.n), novas: Number(x.novas), bytes: Number(x.bytes), ult: x.ult, k: tokenFotos(x.cliente, x.ciclo) })) });
     }
 
     const cliente = String(q.cliente || (req.body && req.body.cliente) || "");
@@ -81,6 +82,7 @@ module.exports = async (req, res) => {
       const p = req.body || {};
       const nome = limpar(p.nome, 160).replace(/\//g, "-");
       const pasta = limpar(p.pasta, 200).replace(/^\/+|\/+$/g, "");
+      const obs = limpar(p.obs, 300);
       if (!nome) return res.status(400).json({ erro: "Foto sem nome" });
       const buf = Buffer.from(String(p.b64 || ""), "base64");
       const mini = p.mini ? Buffer.from(String(p.mini), "base64") : null;
@@ -89,12 +91,13 @@ module.exports = async (req, res) => {
       if (mini && mini.length > MAX_MINI) return res.status(413).json({ erro: `Miniatura grande demais: ${nome}` });
       const agora = new Date().toISOString();
       await db().execute({
-        sql: `INSERT INTO fotos (cliente, ciclo, pasta, nome, mime, largura, altura, tamanho, dados, mini, enviado_em)
-              VALUES (?, ?, ?, ?, 'image/jpeg', ?, ?, ?, ?, ?, ?)
+        // versão nova de um arquivo que já existia volta a ser "nova" (usada_em = NULL) pro Claude aplicar de novo
+        sql: `INSERT INTO fotos (cliente, ciclo, pasta, nome, obs, mime, largura, altura, tamanho, dados, mini, enviado_em)
+              VALUES (?, ?, ?, ?, ?, 'image/jpeg', ?, ?, ?, ?, ?, ?)
               ON CONFLICT (cliente, ciclo, pasta, nome) DO UPDATE SET
-                largura = excluded.largura, altura = excluded.altura, tamanho = excluded.tamanho,
-                dados = excluded.dados, mini = excluded.mini, enviado_em = excluded.enviado_em`,
-        args: [cliente, ciclo, pasta, nome, Number(p.largura) || 0, Number(p.altura) || 0, buf.length, buf, mini, agora]
+                obs = excluded.obs, largura = excluded.largura, altura = excluded.altura, tamanho = excluded.tamanho,
+                dados = excluded.dados, mini = excluded.mini, enviado_em = excluded.enviado_em, usada_em = NULL`,
+        args: [cliente, ciclo, pasta, nome, obs, Number(p.largura) || 0, Number(p.altura) || 0, buf.length, buf, mini, agora]
       });
       return res.json({ ok: true });
     }
@@ -119,6 +122,7 @@ function galeria(cliente, ciclo, base, fotos) {
   const mb = fotos.reduce((s, f) => s + f.tamanho, 0) / 1048576;
   const url = (f, extra = "") => `${base}&id=${f.id}&v=${encodeURIComponent(f.enviado_em)}${extra}`;
   const lista = fotos.map(f => ({ n: (f.pasta ? f.pasta + "/" : "") + f.nome, u: url(f) }));
+  const obsDo = g => { const o = [...new Set(g.map(f => f.obs).filter(Boolean))]; return o.length ? `<p class="obs">${o.map(esc).join(" · ")}</p>` : ""; };
   return `<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -143,6 +147,8 @@ figure img{width:100%;height:100%;object-fit:contain;display:block}
 figcaption{padding:7px 9px;font-size:12px;display:flex;gap:6px;justify-content:space-between;align-items:center}
 figcaption span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 figcaption a{color:var(--dodger);font-weight:700;text-decoration:none}
+figure{position:relative}.selo{position:absolute;top:6px;left:6px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:#0578DC;color:#fff}.selo.u{background:#1F8A55}
+.obs{font-size:13px;color:var(--ink-2);margin:-4px 0 10px}
 </style></head><body>
 <div class="stripe" aria-hidden="true"><i style="flex:4;background:#051E32"></i><i style="flex:8;background:#053C73"></i><i style="flex:18;background:#0578DC"></i><i style="flex:30;background:#055AAA"></i><i style="flex:40;background:#05D2FF"></i></div>
 <main>
@@ -151,8 +157,8 @@ figcaption a{color:var(--dodger);font-weight:700;text-decoration:none}
     ${fotos.length ? `<button id="zip">Baixar todas (.zip)</button>` : ""}
   </div>
   ${fotos.length ? "" : "<p>Nenhuma foto ainda. Use o botão <b>Subir fotos</b> no painel.</p>"}
-  ${Object.keys(grupos).map(p => `<h2>${esc(p || "Sem pasta")} <small>(${grupos[p].length})</small></h2><div class="grid">${grupos[p].map(f => `
-    <figure><a class="img" href="${esc(url(f))}" target="_blank" rel="noopener"><img loading="lazy" src="${esc(url(f, "&mini=1"))}" alt="${esc(f.nome)}"></a>
+  ${Object.keys(grupos).map(p => `<h2>${esc(p || "Sem pasta")} <small>(${grupos[p].length})</small></h2>${obsDo(grupos[p])}<div class="grid">${grupos[p].map(f => `
+    <figure>${f.usada_em ? `<span class="selo u">usada</span>` : `<span class="selo">nova</span>`}<a class="img" href="${esc(url(f))}" target="_blank" rel="noopener"><img loading="lazy" src="${esc(url(f, "&mini=1"))}" alt="${esc(f.nome)}"></a>
     <figcaption><span title="${esc(f.nome)}">${esc(f.nome)}</span><a href="${esc(url(f, "&baixar=1"))}" aria-label="Baixar ${esc(f.nome)}">↓</a></figcaption></figure>`).join("")}</div>`).join("")}
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
