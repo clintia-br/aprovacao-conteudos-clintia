@@ -69,7 +69,10 @@
         "s_atuacao_3",
         "s_atuacao_4",
         "s_atuacao_5",
-        "s_atuacao_6"
+        "s_atuacao_6",
+        "s_atuacao_7",
+        "s_atuacao_8",
+        "s_atuacao_9"
       ],
       "legenda": null
     },
@@ -99,7 +102,9 @@
         "s_ansiedade_2",
         "s_ansiedade_3",
         "s_ansiedade_4",
-        "s_ansiedade_5"
+        "s_ansiedade_5",
+        "s_ansiedade_6",
+        "s_ansiedade_7"
       ],
       "legenda": null
     },
@@ -114,7 +119,12 @@
         "s_depressao_1",
         "s_depressao_2",
         "s_depressao_3",
-        "s_depressao_4"
+        "s_depressao_4",
+        "s_depressao_5",
+        "s_depressao_6",
+        "s_depressao_7",
+        "s_depressao_8",
+        "s_depressao_9"
       ],
       "legenda": null
     },
