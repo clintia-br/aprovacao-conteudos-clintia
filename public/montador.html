@@ -264,7 +264,7 @@ function saveDraft(){
   if(window.PANEL) return; // no painel o conteúdo vai pro banco, não pro rascunho local
   const d={incluirBio:$("#incluirBio").checked};
   TXT.forEach(id=>d[id]=$("#"+id).value);
-  d.feed = state.feed.map(p=>({tipo:p.tipo,titulo:p.titulo,legenda:p.legenda,fixado:p.fixado,roteiro:p.roteiro,videoUrl:p.videoUrl}));
+  d.feed = state.feed.map(p=>({tipo:p.tipo,titulo:p.titulo,data:p.data,legenda:p.legenda,fixado:p.fixado,roteiro:p.roteiro,videoUrl:p.videoUrl}));
   d.dest = state.dest.map(x=>({rotulo:x.rotulo,titulo:x.titulo}));
   try{localStorage.setItem(DKEY, JSON.stringify(d));}catch(e){}
 }
@@ -273,7 +273,7 @@ function loadDraft(){
   if(!d) return;
   TXT.forEach(id=>{ if(d[id]!=null) $("#"+id).value=d[id]; });
   $("#incluirBio").checked=!!d.incluirBio;
-  (d.feed||[]).forEach(p=>state.feed.push({tipo:p.tipo||"imagem",titulo:p.titulo||"",legenda:p.legenda||"",fixado:!!p.fixado,roteiro:p.roteiro||"",videoUrl:p.videoUrl||"",imgs:[],video:null}));
+  (d.feed||[]).forEach(p=>state.feed.push({tipo:p.tipo||"imagem",titulo:p.titulo||"",data:p.data||"",legenda:p.legenda||"",fixado:!!p.fixado,roteiro:p.roteiro||"",videoUrl:p.videoUrl||"",imgs:[],video:null}));
   (d.dest||[]).forEach(x=>state.dest.push({rotulo:x.rotulo||"",titulo:x.titulo||"",capa:null,imgs:[]}));
 }
 
@@ -341,6 +341,7 @@ function renderFeed(){
         </select></div>
         <div class="field"><label>Título</label><input type="text" data-k="titulo" placeholder="Título curto do post"></div>
       </div>
+      <div class="field"><label>Data de publicação <span class="opt">(opcional)</span></label><input type="date" data-k="data"></div>
       <div class="field"><label>Legenda <span class="opt">(pode deixar em branco)</span></label><textarea data-k="legenda" placeholder="Legenda completa do post"></textarea></div>
       <div class="field" data-only="imagem,carrossel"><label>Fotos <span class="opt" data-imghint></span></label>
         <div class="drop mini" data-imgdrop>Arraste as fotos ou <b>clique para escolher</b></div>
@@ -354,6 +355,7 @@ function renderFeed(){
     // bind
     el.querySelector('[data-k="tipo"]').value=p.tipo;
     el.querySelector('[data-k="titulo"]').value=p.titulo;
+    el.querySelector('[data-k="data"]').value=p.data||"";
     el.querySelector('[data-k="legenda"]').value=p.legenda;
     el.querySelector('[data-k="roteiro"]').value=p.roteiro;
     el.querySelector('[data-k="videoUrl"]').value=p.videoUrl||"";
@@ -450,6 +452,7 @@ function renderPreview(){
     let sub = TIPO_PV[p.tipo] || "Post";
     if(p.tipo==="carrossel") sub = `Carrossel, ${p.imgs.length} cards`;
     if(p.fixado) sub += ", fixado no topo";
+    if(/^\d{4}-\d{2}-\d{2}$/.test(p.data||"")) sub = `${p.data.slice(8)}/${p.data.slice(5,7)} · ${sub}`;
     const th = p.imgs[0] ? `<img src="${p.imgs[0].url}">` : "";
     feedRows += row(String(i+1).padStart(2,"0"), th, false, p.titulo||"(sem título)", sub);
   });
@@ -540,6 +543,7 @@ function buildData(opts={}){
   state.feed.forEach((p,i)=>{
     const id=p.id||novoId(), num=p.num||id.slice(1).padStart(2,"0");
     const item={id,grupo:"feed",num,tipo:p.tipo,titulo:p.titulo};
+    if(p.data) item.data=p.data;
     if(p.fixado) item.fixado=true;
     if(p.tipo==="reels"){
       item.titulo = /^reels:/i.test(p.titulo)?p.titulo:("Reels: "+p.titulo);
@@ -696,7 +700,7 @@ async function preencher(cliente,ciclo,d,base){
   for(const it of d.itens||[]){
     if(it.tipo==="bio"){ $("#incluirBio").checked=true; }
     else if(it.tipo==="destaque"){ const capa=it.capa?await pega(it.capa):null; const imgs=[]; for(const k of it.imgs||[]){ const f=await pega(k); if(f) imgs.push(mk(f)); } state.dest.push({rotulo:it.rotulo||"",titulo:it.titulo||"",capa:capa?mk(capa):null,imgs}); }
-    else { const imgs=[]; for(const k of it.imgs||[]){ const f=await pega(k); if(f) imgs.push(mk(f)); } state.feed.push({id:it.id,num:it.num,tipo:it.tipo,titulo:(it.titulo||"").replace(/^Reels:\s*/i,""),legenda:it.legenda||"",fixado:!!it.fixado,roteiro:it.roteiro||"",videoUrl:(typeof it.video==="string"?it.video:""),imgs,video:null}); }
+    else { const imgs=[]; for(const k of it.imgs||[]){ const f=await pega(k); if(f) imgs.push(mk(f)); } state.feed.push({id:it.id,num:it.num,tipo:it.tipo,data:it.data||"",titulo:(it.titulo||"").replace(/^Reels:\s*/i,""),legenda:it.legenda||"",fixado:!!it.fixado,roteiro:it.roteiro||"",videoUrl:(typeof it.video==="string"?it.video:""),imgs,video:null}); }
   }
   render(); renderThumbs();
   if(GITHUB) msgBox("info","Este cliente veio do GitHub. Ao clicar em Salvar no painel, ele passa a ficar no painel e dá pra editar sempre por aqui. O link continua o mesmo.",[]);
