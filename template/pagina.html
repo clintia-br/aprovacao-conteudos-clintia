@@ -360,7 +360,7 @@ img{max-width:100%}
   <section class="cal" aria-label="Lista de aprovação">
     <h2>O que precisa da sua aprovação</h2>
     <p class="hint">Toque em cada item para ver completo e aprovar ou pedir ajuste. O conteúdo pode ser alterado até 2 vezes (texto, arte ou vídeo), então revise tudo com calma e envie as respostas de uma vez só.</p>
-    <h3 class="grp">Perfil e destaques</h3>
+    <h3 class="grp" id="grp-perfil">Perfil e destaques</h3>
     <div class="rows" id="rows-perfil"></div>
     <h3 class="grp">Posts do feed, na ordem de publicação</h3>
     <div class="rows" id="rows-feed"></div>
@@ -501,12 +501,17 @@ function renderLists() {
     </button>`;
   };
   $("#rows-perfil").innerHTML = ITEMS.filter(i => i.grupo === "perfil").map(row).join("");
+  // ciclo sem bio/destaques pra aprovar: some o título da seção
+  $("#grp-perfil").hidden = !ITEMS.some(i => i.grupo === "perfil");
   $("#rows-feed").innerHTML = feed.map(row).join("");
 }
 
 function renderDynamic() {
   const b = st("bio");
-  $("#ig-bio").innerHTML = `<b>${esc(CONFIG.nome)}</b><br>${CONFIG.bio.map(esc).join("<br>")}<br><span class="lk">${esc(CONFIG.link)}</span><span class="bio-tag ${b}">${b === "wait" ? "Nova bio: toque para aprovar" : "Bio: " + LBL[b].toLowerCase()}</span>`;
+  // a bio só é clicável e ganha selo quando está na lista de aprovação (item "bio")
+  const temBio = !!byId("bio");
+  if (!temBio) { $("#ig-bio").removeAttribute("data-open"); $("#ig-bio").removeAttribute("aria-label"); }
+  $("#ig-bio").innerHTML = `<b>${esc(CONFIG.nome)}</b><br>${CONFIG.bio.map(esc).join("<br>")}${CONFIG.link ? `<br><span class="lk">${esc(CONFIG.link)}</span>` : ""}${temBio ? `<span class="bio-tag ${b}">${b === "wait" ? "Nova bio: toque para aprovar" : "Bio: " + LBL[b].toLowerCase()}</span>` : ""}`;
 
   document.querySelectorAll("[data-item]").forEach(el => {
     const it = byId(el.dataset.item), s = st(it.id), c = dec[it.id] && dec[it.id].c;
