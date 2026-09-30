@@ -1,22 +1,25 @@
 {
-  "cliente": "Clínica Mais Vida",
-  "titulo": "Conteúdo de outubro",
+  "cliente": "Mais Vida",
+  "titulo": "Aprovação conteúdo Outubro",
   "whatsappAgencia": "",
   "perfil": {
-    "usuario": "clinicamaisvida",
+    "usuario": "clinicamaisvida_",
     "nome": "Clínica Mais Vida",
     "bio": [
-      "Clínica médica · Nova Iguaçu/RJ",
-      "Unidades KM 32 e Cabuçu",
-      "Agende pelo WhatsApp"
+      "Medicina e saúde",
+      "💙 Mais Vida para toda a família",
+      "🩺 +17 especialidades • Exames • Terapias",
+      "📍 Cabuçu e KM 32 | Nova Iguaçu",
+      "📲 Agende online pelo link abaixo",
+      "Avenida Abílio Augusto Távora, 279, 2º andar, Cabuçu, Rio De Janeiro, Brazil 26291200"
     ],
     "link": "",
     "rodape": "Clínica Mais Vida · Nova Iguaçu/RJ",
     "avatar": "avatar",
     "stats": {
-      "posts": 15,
-      "seguidores": "—",
-      "seguindo": "—"
+      "posts": 689,
+      "seguidores": "4.649",
+      "seguindo": "86"
     }
   },
   "publicados": [],
