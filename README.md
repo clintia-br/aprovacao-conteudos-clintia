@@ -94,6 +94,20 @@ O montador tem também **Baixar pacote (.zip)**: gera o `dados.json` + as fotos 
 
 Se algo estiver errado (arquivo faltando, id repetido, vírgula sobrando no JSON), o build falha e o log da Vercel diz exatamente o quê e onde. O site que já está no ar continua funcionando.
 
+### Subir fotos (caixa de fotos do cliente)
+
+Pra mandar artes/fotos pra dentro do sistema sem GitHub nem Drive: no painel, **Subir fotos** (botão no topo ou na coluna **Fotos** da linha do cliente).
+
+1. Escolha o cliente. Cliente que ainda não está no painel? **+ Outro cliente…** e digite o nome e a pasta (ex.: `2026-10`).
+2. Arraste as fotos, ou a **pasta inteira** que veio do designer. As subpastas viram a organização (`destaques/quem sou`, `feed`...).
+3. **Enviar**. Até **150 MB por envio**. Passou disso, envie em duas vezes.
+
+Cada foto é comprimida no navegador antes de subir (JPG até 2160 px, fundo branco no lugar de transparência). PNG de 5 MB vira ~300 KB, sem perda visível pro Instagram. Mandou de novo um arquivo com o mesmo nome na mesma pasta? Substitui (versão nova).
+
+Na mesma janela aparecem as fotos já enviadas, com baixar (↓) e apagar (✕). **Copiar link da galeria** gera `/fotos/<cliente>/<pasta>/<código>`, uma página só de visualização com **Baixar todas (.zip)**. Serve pra mandar pra designer ou pra equipe sem passar a senha do painel. É um código diferente do link de aprovação: o cliente não vê essa caixa.
+
+As fotos ficam no Turso (tabela `fotos`, criada sozinha no 1º uso). Elas **não entram** na página de aprovação sozinhas: são a caixa de entrada. Pra usar num ciclo, baixe e coloque no montador (ou em `midia/`).
+
 ### Padrão de nomes das mídias
 | O quê | Nome | Exemplo |
 |---|---|---|
