@@ -26,7 +26,7 @@
       "grupo": "feed",
       "num": "01",
       "tipo": "imagem",
-      "titulo": "Dia da Pessoa Idosa (01/10)",
+      "titulo": "01/10 · Dia da Pessoa Idosa",
       "imgs": [
         "p1"
       ],
@@ -37,7 +37,7 @@
       "grupo": "feed",
       "num": "02",
       "tipo": "carrossel",
-      "titulo": "Outubro Rosa: por que o laço é cor-de-rosa?",
+      "titulo": "02/10 · Outubro Rosa: a história da campanha",
       "imgs": [
         "p2",
         "p2_2",
@@ -55,44 +55,9 @@
       "grupo": "feed",
       "num": "04",
       "tipo": "imagem",
-      "titulo": "Omeprazol por conta própria para azia?",
+      "titulo": "05/10 · Gastro: omeprazol por conta própria",
       "imgs": [
         "p4"
-      ],
-      "legenda": null
-    },
-    {
-      "id": "p6",
-      "grupo": "feed",
-      "num": "06",
-      "tipo": "carrossel",
-      "titulo": "Saúde mental: descansar sem culpa",
-      "imgs": [
-        "p6",
-        "p6_2",
-        "p6_3",
-        "p6_4",
-        "p6_5",
-        "p6_6",
-        "p6_7",
-        "p6_8"
-      ],
-      "legenda": null
-    },
-    {
-      "id": "p7",
-      "grupo": "feed",
-      "num": "07",
-      "tipo": "carrossel",
-      "titulo": "Obesidade: caneta pra emagrecer por conta própria?",
-      "imgs": [
-        "p7",
-        "p7_2",
-        "p7_3",
-        "p7_4",
-        "p7_5",
-        "p7_6",
-        "p7_7"
       ],
       "legenda": null
     },
@@ -100,38 +65,73 @@
       "id": "p8",
       "grupo": "feed",
       "num": "08",
-      "tipo": "imagem",
-      "titulo": "Feliz Dia das Crianças (12/10)",
-      "imgs": [
-        "p8"
-      ],
-      "legenda": null
-    },
-    {
-      "id": "p11",
-      "grupo": "feed",
-      "num": "11",
-      "tipo": "imagem",
-      "titulo": "Feliz Dia do Médico (18/10)",
-      "imgs": [
-        "p11"
-      ],
-      "legenda": null
-    },
-    {
-      "id": "p12",
-      "grupo": "feed",
-      "num": "12",
       "tipo": "carrossel",
-      "titulo": "Outubro Rosa: nem ignorar, nem entrar em pânico",
+      "titulo": "10/10 · Saúde mental: “não posso parar” e a culpa de descansar",
       "imgs": [
-        "p12_2",
-        "p12_3",
-        "p12_4",
-        "p12_5",
-        "p12_6",
-        "p12_7",
-        "p12_8"
+        "p8",
+        "p8_2",
+        "p8_3",
+        "p8_4",
+        "p8_5",
+        "p8_6",
+        "p8_7",
+        "p8_8"
+      ],
+      "legenda": null
+    },
+    {
+      "id": "p9",
+      "grupo": "feed",
+      "num": "09",
+      "tipo": "carrossel",
+      "titulo": "11/10 · Prevenção da obesidade e as canetas",
+      "imgs": [
+        "p9",
+        "p9_2",
+        "p9_3",
+        "p9_4",
+        "p9_5",
+        "p9_6",
+        "p9_7"
+      ],
+      "legenda": null
+    },
+    {
+      "id": "p10",
+      "grupo": "feed",
+      "num": "10",
+      "tipo": "imagem",
+      "titulo": "12/10 · Dia das Crianças",
+      "imgs": [
+        "p10"
+      ],
+      "legenda": null
+    },
+    {
+      "id": "p14",
+      "grupo": "feed",
+      "num": "14",
+      "tipo": "imagem",
+      "titulo": "18/10 · Dia do Médico (a receita)",
+      "imgs": [
+        "p14"
+      ],
+      "legenda": null
+    },
+    {
+      "id": "p15",
+      "grupo": "feed",
+      "num": "15",
+      "tipo": "carrossel",
+      "titulo": "19/10 · Câncer de mama: a história da Ana",
+      "imgs": [
+        "p15_2",
+        "p15_3",
+        "p15_4",
+        "p15_5",
+        "p15_6",
+        "p15_7",
+        "p15_8"
       ],
       "legenda": null
     }
