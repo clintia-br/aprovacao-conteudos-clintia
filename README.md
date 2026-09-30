@@ -44,6 +44,7 @@ aprovacao-clintia/
 | `TOKEN_SECRET` | uma frase longa e aleatória (ex.: gere em passwordsgenerator.net, 40 caracteres) |
 | `ADMIN_PASSWORD` | senha do painel interno |
 | `ZAPIER_WEBHOOK_URL` | opcional, ver passo 4 |
+| `CLAUDE_FOTOS_KEY` | opcional, chave pro Claude ler o "Subir fotos" (ver "Claude aplicando as fotos") |
 
 4. Deploy. No log do build aparecem os links gerados, ex.:
    `✓ gabriela-kaufman/2026-09-estruturacao → /c/gabriela-kaufman/2026-09-estruturacao-a1b2c3d4e5f6`
@@ -106,7 +107,21 @@ Cada foto é comprimida no navegador antes de subir (JPG até 2160 px, fundo bra
 
 Na mesma janela aparecem as fotos já enviadas, com baixar (↓) e apagar (✕). **Copiar link da galeria** gera `/fotos/<cliente>/<pasta>/<código>`, uma página só de visualização com **Baixar todas (.zip)**. Serve pra mandar pra designer ou pra equipe sem passar a senha do painel. É um código diferente do link de aprovação: o cliente não vê essa caixa.
 
-As fotos ficam no Turso (tabela `fotos`, criada sozinha no 1º uso). Elas **não entram** na página de aprovação sozinhas: são a caixa de entrada. Pra usar num ciclo, baixe e coloque no montador (ou em `midia/`).
+As fotos ficam no Turso (tabela `fotos`, criada sozinha no 1º uso). Elas **não entram** na página de aprovação sozinhas: são a caixa de entrada. Pra usar num ciclo, baixe e coloque no montador (ou em `midia/`), ou peça pro Claude (abaixo).
+
+O campo **O que é** (opcional) vale pro envio inteiro: escreva pra onde vão as artes ("destaque Quem sou, versão nova"). Cada foto mostra um selo **nova** ou **usada** (já aplicada no site pelo Claude). Reenviar o mesmo arquivo faz ele voltar a ser **nova**.
+
+### Claude aplicando as fotos
+
+Depois de configurado, é só subir as fotos e dizer numa sessão do Claude Code: *"subi fotos da Gabriela, troca"*. O Claude baixa as novas, identifica onde entra cada uma, troca no ciclo, abre o PR e, com seu OK, publica. O passo a passo que ele segue está no `CLAUDE.md`.
+
+Configuração (uma vez só):
+1. **Chave:** gere uma frase aleatória longa (40+ caracteres, ex.: passwordsgenerator.net). Ela só lê fotos e marca como usadas: não aprova, não apaga, não mexe em cliente.
+2. **Vercel** → Settings → Environment Variables → `CLAUDE_FOTOS_KEY` = a chave → Redeploy.
+3. **Claude Code** → menu do ambiente (☁ no topo da sessão) → Editar:
+   - **Acesso à rede:** *Personalizado*, adicionando o domínio do painel (ex.: `aprovacao-clintia.vercel.app`), ou *Completo*.
+   - **Variáveis de ambiente:** `PAINEL_URL=https://<domínio do painel>` e `CLAUDE_FOTOS_KEY=<a mesma chave>`.
+   - Vale pra sessões novas (as abertas não pegam a mudança).
 
 ### Padrão de nomes das mídias
 | O quê | Nome | Exemplo |

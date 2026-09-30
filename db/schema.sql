@@ -62,6 +62,8 @@ CREATE TABLE IF NOT EXISTS fotos (
   dados      BLOB NOT NULL,
   mini       BLOB,
   enviado_em TEXT NOT NULL,
+  obs        TEXT NOT NULL DEFAULT '',   -- "O que é" digitado no envio (pra onde vai a arte)
+  usada_em   TEXT,                       -- quando o Claude aplicou no site (NULL = nova)
   UNIQUE (cliente, ciclo, pasta, nome)   -- mesmo nome na mesma pasta = versão nova, substitui
 );
 

@@ -59,6 +59,9 @@ button:disabled{opacity:.5;cursor:default}
 .gal figcaption span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gal figcaption a,.gal figcaption button{background:none;border:0;padding:0 3px;color:var(--dodger);font-weight:700;cursor:pointer;font-size:13px;text-decoration:none}
 .gal figcaption button{color:var(--fix)}
+.gal figure{position:relative}
+.selo{position:absolute;top:5px;left:5px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--dodger);color:#fff}.selo.u{background:var(--ok)}
+.gal .obs{font-size:12px;color:var(--ink-2);margin:-4px 0 8px}
 @media (max-width:560px){.novo{grid-template-columns:1fr}}
 </style>
 </head>
@@ -113,7 +116,7 @@ function render() {
           <td><span class="tag ${cls}">${txt}</span></td>
           <td>${c.envios}${c.envios ? `<br><small>${quando(c.ultimoEnvio)}</small>` : ""}</td>
           <td>${quando(c.ultimaAcao)}</td>
-          <td>${fotosResumo[c.cliente + "/" + c.ciclo] ? `${fotosResumo[c.cliente + "/" + c.ciclo].n} foto(s)<br>` : ""}<a href="#" data-fotos="${esc(c.cliente)}|${esc(c.ciclo)}">Subir fotos</a></td>
+          <td>${fotosResumo[c.cliente + "/" + c.ciclo] ? `${fotosResumo[c.cliente + "/" + c.ciclo].n} foto(s)${fotosResumo[c.cliente + "/" + c.ciclo].novas ? ` · <b>${fotosResumo[c.cliente + "/" + c.ciclo].novas} nova(s)</b>` : ""}<br>` : ""}<a href="#" data-fotos="${esc(c.cliente)}|${esc(c.ciclo)}">Subir fotos</a></td>
           <td><a href="${esc(c.link)}" target="_blank" rel="noopener">Abrir</a> · <a href="#" data-copy="${esc(location.origin + c.link)}">Copiar</a>${c.ajustes ? ` · <a href="#" data-limpar="${esc(c.cliente)}|${esc(c.ciclo)}|${c.ajustes}">Limpar considerações</a>` : ""}${c.origem === "banco" ? ` · <a href="#" data-edit="${esc(c.cliente)}|${esc(c.ciclo)}">Editar</a> · <a href="#" data-del="${esc(c.cliente)}|${esc(c.ciclo)}" style="color:var(--fix)">Remover</a>` : ""}</td>
         </tr>`;
       }).join("") || `<tr><td colspan="8">Nenhum ciclo neste filtro.</td></tr>`}</tbody>
@@ -212,6 +215,8 @@ function abrirFotos(cliente, ciclo) {
       <input id="nd-cli" placeholder="Cliente (ex.: clinica-bem-viver)" autocomplete="off" aria-label="Cliente">
       <input id="nd-cic" placeholder="Pasta (ex.: 2026-10)" autocomplete="off" aria-label="Pasta">
     </div>
+    <label class="lb" for="obs">O que é? <small>(opcional, ajuda o Claude a saber onde entra cada arte)</small></label>
+    <input id="obs" maxlength="300" placeholder="Ex.: destaque Quem sou, versão nova · carrossel 03 com a foto trocada" autocomplete="off">
     <div class="drop" id="drop" tabindex="0" role="button" aria-label="Escolher fotos">
       <b>Arraste as fotos ou pastas inteiras aqui</b>
       <span>ou <button type="button" class="lnk" id="esc-f">escolha fotos</button> · <button type="button" class="lnk" id="esc-p">escolha uma pasta</button></span>
@@ -240,7 +245,7 @@ function abrirFotos(cliente, ciclo) {
     m.remove();
     document.body.style.overflow = "";
     document.removeEventListener("keydown", teclas);
-    render();
+    carregarResumo().then(render); // contagem de fotos novas/usadas pode ter mudado
   };
   document.addEventListener("keydown", teclas);
   $("#fechar").onclick = fechar;
@@ -342,7 +347,7 @@ const toB64 = blob => new Promise(ok => { const r = new FileReader(); r.onload =
 async function subirUma(d, it) {
   const { foto, mini } = await prepararFoto(it.file);
   const corpo = JSON.stringify({
-    cliente: d.cliente, ciclo: d.ciclo, pasta: it.pasta, nome: it.file.name.replace(/\.[^.]+$/, "") + ".jpg",
+    cliente: d.cliente, ciclo: d.ciclo, pasta: it.pasta, nome: it.file.name.replace(/\.[^.]+$/, "") + ".jpg", obs: d.obs,
     largura: foto.w, altura: foto.h, b64: await toB64(foto.b), mini: await toB64(mini.b)
   });
   for (let tentativa = 0; ; tentativa++) {
@@ -359,6 +364,7 @@ async function subirUma(d, it) {
 async function enviar() {
   const d = destinoAtual();
   if (!d) { mostrarFila(`<p class="aviso er">Preencha o cliente e a pasta antes de enviar.</p>`); return; }
+  d.obs = $("#obs").value.trim();
   enviando = true;
   const total = fila.length, lista = [...fila], erros = [];
   let feitas = 0;
@@ -397,10 +403,11 @@ async function carregarGaleria() {
   const linkGaleria = `${location.origin}/fotos/${d.cliente}/${d.ciclo}/${k}`;
   const grupos = {};
   fotos.forEach(f => (grupos[f.pasta] = grupos[f.pasta] || []).push(f));
+  const obsDo = lista => { const o = [...new Set(lista.map(f => f.obs).filter(Boolean))]; return o.length ? `<p class="obs">${o.map(esc).join(" · ")}</p>` : ""; };
   g.innerHTML = `<div class="gal-top"><b>Já enviadas (${fotos.length})</b>${fotos.length ? `<span><a href="${esc(linkGaleria)}" target="_blank" rel="noopener">Abrir galeria</a> · <a href="#" id="cp-gal">Copiar link da galeria</a></span>` : ""}</div>`
     + (fotos.length ? "" : `<small>Nada enviado pra ${esc(d.cliente)} / ${esc(d.ciclo)} ainda.</small>`)
-    + Object.keys(grupos).map(p => `<h3>${esc(p || "Sem pasta")} (${grupos[p].length})</h3><div class="grid">${grupos[p].map(f => `
-      <figure><a href="${esc(url(f))}" target="_blank" rel="noopener"><img loading="lazy" src="${esc(url(f, "&mini=1"))}" alt="${esc(f.nome)}"></a>
+    + Object.keys(grupos).map(p => `<h3>${esc(p || "Sem pasta")} (${grupos[p].length})</h3>${obsDo(grupos[p])}<div class="grid">${grupos[p].map(f => `
+      <figure>${f.usada_em ? `<span class="selo u" title="Aplicada no site em ${esc(quando(f.usada_em))}">usada</span>` : `<span class="selo">nova</span>`}<a href="${esc(url(f))}" target="_blank" rel="noopener"><img loading="lazy" src="${esc(url(f, "&mini=1"))}" alt="${esc(f.nome)}"></a>
       <figcaption><span title="${esc(f.nome)} · ${f.largura}×${f.altura}">${esc(f.nome)}</span><a href="${esc(url(f, "&baixar=1"))}" aria-label="Baixar ${esc(f.nome)}">↓</a><button type="button" data-apagar="${f.id}" aria-label="Apagar ${esc(f.nome)}">✕</button></figcaption></figure>`).join("")}</div>`).join("");
   const cp = $("#cp-gal");
   if (cp) cp.onclick = async e => {
