@@ -534,8 +534,11 @@ function buildData(opts={}){
     const imgs=x.imgs.map((im,j)=>add("s"+(i+1)+"_"+(j+1)+ex(im.file), im));
     dados.itens.push({id:"d"+(i+1),grupo:"perfil",tipo:"destaque",titulo:x.titulo||("Destaque: "+x.rotulo),rotulo:x.rotulo,capa,imgs,legenda:null});
   });
+  // posts carregados pra edição mantêm id e número (as respostas do cliente ficam presas ao id); novos pegam o próximo livre
+  const usados=new Set(state.feed.map(p=>p.id).filter(Boolean)); let prox=1;
+  const novoId=()=>{ while(usados.has("p"+prox)) prox++; usados.add("p"+prox); return "p"+prox; };
   state.feed.forEach((p,i)=>{
-    const id="p"+(i+1), num=String(i+1).padStart(2,"0");
+    const id=p.id||novoId(), num=p.num||id.slice(1).padStart(2,"0");
     const item={id,grupo:"feed",num,tipo:p.tipo,titulo:p.titulo};
     if(p.fixado) item.fixado=true;
     if(p.tipo==="reels"){
@@ -596,6 +599,7 @@ if(typeof JSZip==="undefined"){ $("#btn-download").disabled=true; }
 const params=new URLSearchParams(location.search);
 window.PANEL = params.get("painel")==="1";
 const EDIT = window.PANEL && params.get("cliente") && params.get("ciclo");
+const GITHUB = EDIT && params.get("origem")==="github";
 let PW = window.PANEL ? (sessionStorage.getItem("montador:pw")||"") : "";
 
 async function compress(file, maxW, q){
@@ -644,7 +648,7 @@ async function salvarNoPainel(){
     const j=await r.json();
     localStorage.removeItem(DKEY);
     const b=$("#ok-msg"); b.className="ok-msg show"; b.style.borderColor="#B9E2CB"; b.style.background="#E8F6EE";
-    b.innerHTML=`<b>${EDIT?"Cliente atualizado!":"Cliente salvo no painel!"}</b><ol><li>Link do cliente: <a href="${j.link}" target="_blank" rel="noopener">${j.link}</a></li><li>Já aparece no painel — copie o link e mande pro cliente.</li></ol><div style="margin-top:10px"><button class="btn ghost" onclick="location.href='/painel'">Voltar ao painel</button></div>`;
+    b.innerHTML=`<b>${EDIT?"Cliente atualizado!":"Cliente salvo no painel!"}</b>${GITHUB?`<p style="margin:8px 0 0">Falta um passo: a versão antiga ainda está no GitHub (pasta <code>clientes/${escapeHtml(slug)}/${escapeHtml(ciclo)}</code>) e aparece no lugar desta até ser removida. Peça pro Claude remover, ou apague a pasta no GitHub.</p>`:""}<ol><li>Link do cliente: <a href="${j.link}" target="_blank" rel="noopener">${j.link}</a></li><li>Já aparece no painel — copie o link e mande pro cliente.</li></ol><div style="margin-top:10px"><button class="btn ghost" onclick="location.href='/painel'">Voltar ao painel</button></div>`;
     b.scrollIntoView({behavior:"smooth",block:"center"});
   }catch(err){
     if(err.message==="401"){ sessionStorage.removeItem("montador:pw"); PW=""; msgBox("erro","Senha do painel incorreta. Clique em Salvar de novo pra tentar.",[]); }
@@ -652,8 +656,22 @@ async function salvarNoPainel(){
   }finally{ btn.disabled=false; btn.textContent=old; }
 }
 
+async function carregarDoGithub(cliente,ciclo){
+  // ciclo que está no GitHub: lê os dados da própria página publicada; ao salvar, ele passa a ficar no painel
+  const link=params.get("link")||"";
+  if(!/^\/c\/[a-z0-9-]+\/[a-z0-9-]+$/.test(link)) throw new Error("link");
+  const html=await (await fetch(link)).text();
+  const m=html.match(/^const DATA = (.*);$/m); if(!m) throw new Error("dados");
+  const d=JSON.parse(m[1]);
+  return { d, base: link+"/midia/" };
+}
 async function carregarParaEditar(){
   const cliente=params.get("cliente"), ciclo=params.get("ciclo");
+  if(GITHUB){
+    msgBox("info","Carregando o cliente para edição…");
+    let g; try{ g=await carregarDoGithub(cliente,ciclo); }catch(e){ return msgBox("erro","Não consegui carregar este cliente pra edição.",[]); }
+    return preencher(cliente,ciclo,g.d,g.base);
+  }
   if(!PW){ PW=(prompt("Senha do painel:")||"").trim(); if(!PW){ msgBox("erro","Precisa da senha do painel pra editar.",[]); return; } sessionStorage.setItem("montador:pw",PW); }
   msgBox("info","Carregando o cliente para edição…");
   let j; try{
@@ -662,23 +680,27 @@ async function carregarParaEditar(){
     if(!r.ok) return msgBox("erro","Não consegui carregar este cliente pra edição.",[]);
     j=await r.json();
   }catch(e){ return msgBox("erro","Falha de conexão ao carregar.",[]); }
-  const d=j.dados, pf=d.perfil||{}, base=`/api/midia?c=${encodeURIComponent(cliente)}&y=${encodeURIComponent(ciclo)}&t=${j.token}&f=`;
+  return preencher(cliente,ciclo,j.dados,`/api/midia?c=${encodeURIComponent(cliente)}&y=${encodeURIComponent(ciclo)}&t=${j.token}&f=`);
+}
+async function preencher(cliente,ciclo,d,base){
+  const pf=d.perfil||{};
   $("#cliente").value=d.cliente||""; $("#slug").value=cliente; $("#slug").dataset.touched="1";
   $("#ciclo").value=ciclo; $("#ciclo").readOnly=true; $("#titulo").value=d.titulo||""; $("#whatsapp").value=d.whatsappAgencia||"";
   $("#usuario").value=pf.usuario||""; $("#nome").value=pf.nome||""; $("#bio").value=(pf.bio||[]).join("\n");
   $("#link").value=pf.link||""; $("#rodape").value=pf.rodape||"";
   const st=pf.stats||{}; $("#s_posts").value=st.posts||""; $("#s_seg").value=st.seguidores||""; $("#s_seg2").value=st.seguindo||"";
   state.feed=[]; state.dest=[]; state.publicados=[]; state.avatar=null;
-  const pega=async nome=>{ try{ const r=await fetch(base+encodeURIComponent(nome)); if(!r.ok)return null; const b=await r.blob(); return new File([b],nome,{type:b.type||"image/jpeg"}); }catch(e){ return null; } };
+  const pega=async nome=>{ try{ const arq=/\.\w{2,4}$/.test(nome)?nome:nome+".jpg"; const r=await fetch(base+encodeURIComponent(arq)); if(!r.ok)return null; const b=await r.blob(); return new File([b],nome,{type:b.type||"image/jpeg"}); }catch(e){ return null; } };
   if(pf.avatar){ const f=await pega(pf.avatar); if(f) state.avatar=mk(f); }
   for(const k of d.publicados||[]){ const f=await pega(k); if(f) state.publicados.push(mk(f)); }
   for(const it of d.itens||[]){
     if(it.tipo==="bio"){ $("#incluirBio").checked=true; }
     else if(it.tipo==="destaque"){ const capa=it.capa?await pega(it.capa):null; const imgs=[]; for(const k of it.imgs||[]){ const f=await pega(k); if(f) imgs.push(mk(f)); } state.dest.push({rotulo:it.rotulo||"",titulo:it.titulo||"",capa:capa?mk(capa):null,imgs}); }
-    else { const imgs=[]; for(const k of it.imgs||[]){ const f=await pega(k); if(f) imgs.push(mk(f)); } state.feed.push({tipo:it.tipo,titulo:(it.titulo||"").replace(/^Reels:\s*/i,""),legenda:it.legenda||"",fixado:!!it.fixado,roteiro:it.roteiro||"",videoUrl:(typeof it.video==="string"?it.video:""),imgs,video:null}); }
+    else { const imgs=[]; for(const k of it.imgs||[]){ const f=await pega(k); if(f) imgs.push(mk(f)); } state.feed.push({id:it.id,num:it.num,tipo:it.tipo,titulo:(it.titulo||"").replace(/^Reels:\s*/i,""),legenda:it.legenda||"",fixado:!!it.fixado,roteiro:it.roteiro||"",videoUrl:(typeof it.video==="string"?it.video:""),imgs,video:null}); }
   }
   render(); renderThumbs();
-  $("#ok-msg").className="ok-msg";
+  if(GITHUB) msgBox("info","Este cliente veio do GitHub. Ao clicar em Salvar no painel, ele passa a ficar no painel e dá pra editar sempre por aqui. O link continua o mesmo.",[]);
+  else $("#ok-msg").className="ok-msg";
 }
 
 if(window.PANEL){

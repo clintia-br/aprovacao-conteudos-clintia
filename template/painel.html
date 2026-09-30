@@ -117,7 +117,7 @@ function render() {
           <td>${c.envios}${c.envios ? `<br><small>${quando(c.ultimoEnvio)}</small>` : ""}</td>
           <td>${quando(c.ultimaAcao)}</td>
           <td>${fotosResumo[c.cliente + "/" + c.ciclo] ? `${fotosResumo[c.cliente + "/" + c.ciclo].n} foto(s)${fotosResumo[c.cliente + "/" + c.ciclo].novas ? ` · <b>${fotosResumo[c.cliente + "/" + c.ciclo].novas} nova(s)</b>` : ""}<br>` : ""}<a href="#" data-fotos="${esc(c.cliente)}|${esc(c.ciclo)}">Subir fotos</a></td>
-          <td><a href="${esc(c.link)}" target="_blank" rel="noopener">Abrir</a> · <a href="#" data-copy="${esc(location.origin + c.link)}">Copiar</a>${c.ajustes ? ` · <a href="#" data-limpar="${esc(c.cliente)}|${esc(c.ciclo)}|${c.ajustes}">Limpar considerações</a>` : ""}${c.origem === "banco" ? ` · <a href="#" data-edit="${esc(c.cliente)}|${esc(c.ciclo)}">Editar</a> · <a href="#" data-del="${esc(c.cliente)}|${esc(c.ciclo)}" style="color:var(--fix)">Remover</a>` : ""}</td>
+          <td><a href="${esc(c.link)}" target="_blank" rel="noopener">Abrir</a> · <a href="#" data-copy="${esc(location.origin + c.link)}">Copiar</a>${c.ajustes ? ` · <a href="#" data-limpar="${esc(c.cliente)}|${esc(c.ciclo)}|${c.ajustes}">Limpar considerações</a>` : ""}${c.origem === "banco" ? ` · <a href="#" data-edit="${esc(c.cliente)}|${esc(c.ciclo)}">Editar</a> · <a href="#" data-del="${esc(c.cliente)}|${esc(c.ciclo)}" style="color:var(--fix)">Remover</a>` : ` · <a href="#" data-edit="${esc(c.cliente)}|${esc(c.ciclo)}|${esc(c.link)}">Editar</a>`}</td>
         </tr>`;
       }).join("") || `<tr><td colspan="8">Nenhum ciclo neste filtro.</td></tr>`}</tbody>
     </table></div>`;
@@ -137,9 +137,10 @@ function render() {
   });
   document.querySelectorAll("[data-edit]").forEach(a => a.onclick = e => {
     e.preventDefault();
-    const [cliente, ciclo] = a.dataset.edit.split("|");
+    const [cliente, ciclo, link] = a.dataset.edit.split("|");
     sessionStorage.setItem("montador:pw", senha);
-    location.href = `/montador?painel=1&cliente=${encodeURIComponent(cliente)}&ciclo=${encodeURIComponent(ciclo)}`;
+    // ciclo do GitHub: o montador lê da página publicada e, ao salvar, passa a guardar no banco
+    location.href = `/montador?painel=1&cliente=${encodeURIComponent(cliente)}&ciclo=${encodeURIComponent(ciclo)}` + (link ? `&origem=github&link=${encodeURIComponent(link)}` : "");
   });
   document.querySelectorAll("[data-limpar]").forEach(a => a.onclick = async e => {
     e.preventDefault();

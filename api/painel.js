@@ -15,11 +15,10 @@ module.exports = async (req, res) => {
     try { ciclos = JSON.parse(fs.readFileSync(path.join(process.cwd(), "lib", "ciclos.json"), "utf8")).map(x => ({ ...x, origem: "github" })); } catch (e) {}
     try {
       const c = await db().execute("SELECT cliente, ciclo, nome, titulo, total FROM ciclos");
-      const chaves = new Set(ciclos.map(x => `${x.cliente}/${x.ciclo}`));
-      c.rows.forEach(r => {
-        const k = `${r.cliente}/${r.ciclo}`;
-        if (!chaves.has(k)) ciclos.push({ cliente: r.cliente, ciclo: r.ciclo, nome: r.nome, titulo: r.titulo, total: Number(r.total), origem: "banco" });
-      });
+      // mesmo ciclo nos dois lugares (ciclo do GitHub salvo pelo montador): vale o do banco, que é o editável
+      const banco = new Set(c.rows.map(r => `${r.cliente}/${r.ciclo}`));
+      ciclos = ciclos.filter(x => !banco.has(`${x.cliente}/${x.ciclo}`));
+      c.rows.forEach(r => ciclos.push({ cliente: r.cliente, ciclo: r.ciclo, nome: r.nome, titulo: r.titulo, total: Number(r.total), origem: "banco" }));
     } catch (e) { console.error("tabela ciclos:", e.message); }
 
     const d = await db().execute(
