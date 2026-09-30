@@ -162,6 +162,7 @@ async function carregar() {
   const r = await fetch("/api/painel", { headers: { "x-admin-password": senha } });
   if (r.status === 401) { sessionStorage.removeItem("painel-pw"); location.reload(); return; }
   if (!r.ok) { $("#app").innerHTML = `<p class="err">Não foi possível carregar o painel. Tente de novo em instantes.</p>`; return; }
+  try { localStorage.setItem("clintia:equipe", "1"); } catch (e) {}
   dados = (await r.json()).ciclos;
   await carregarResumo();
   render();
@@ -428,6 +429,7 @@ $("#login").onsubmit = async e => {
   const r = await fetch("/api/painel", { headers: { "x-admin-password": senha } });
   if (!r.ok) { $("#err").textContent = r.status === 401 ? "Senha incorreta." : "Erro ao conectar."; return; }
   sessionStorage.setItem("painel-pw", senha);
+  try { localStorage.setItem("clintia:equipe", "1"); } catch (e) {} // mostra "Limpar considerações" nas páginas dos clientes
   dados = (await r.json()).ciclos;
   await carregarResumo();
   render();

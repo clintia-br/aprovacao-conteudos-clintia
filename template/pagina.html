@@ -67,6 +67,8 @@ img{max-width:100%}
 .bar .o{background:var(--ok)} .bar .f{background:var(--fix)}
 .send{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:12px 20px;font-weight:700}
 .send:hover{background:var(--celtic)}
+.limpar{background:none;color:var(--fix);border:1.5px solid var(--fix);border-radius:10px;padding:10px 16px;font-weight:700}
+.limpar:hover{background:var(--fix);color:#fff}
 
 /* ---------- layout ---------- */
 .layout{max-width:1180px;margin:0 auto;padding:24px 20px 60px;display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:40px;align-items:start}
@@ -324,6 +326,7 @@ img{max-width:100%}
       <p id="p-txt"></p>
       <div class="bar"><i class="o" id="p-ok"></i><i class="f" id="p-fix"></i></div>
     </div>
+    <button class="limpar" id="btn-limpar" type="button" hidden title="Só a equipe vê este botão">Limpar considerações</button>
     <button class="send" id="btn-send" data-send>Enviar respostas</button>
   </div>
 </header>
@@ -523,7 +526,32 @@ function renderDynamic() {
   $("#p-txt").innerHTML = `<b>${ok} de ${tot}</b> aprovados${fx ? `, <b>${fx}</b> com ajuste` : ""}`;
   $("#p-ok").style.width = (ok / tot * 100) + "%";
   $("#p-fix").style.width = (fx / tot * 100) + "%";
+  $("#btn-limpar").hidden = !(EQUIPE && online && fx);
 }
+
+// "Limpar considerações" só pra equipe: aparece no navegador que já entrou no painel (ou com ?equipe no link)
+// e pede a senha do painel, então o cliente não vê nem consegue usar.
+let EQUIPE = false;
+try {
+  if (new URLSearchParams(location.search).has("equipe")) localStorage.setItem("clintia:equipe", "1");
+  EQUIPE = localStorage.getItem("clintia:equipe") === "1";
+} catch (e) {}
+$("#btn-limpar").onclick = async () => {
+  const fx = ITEMS.filter(i => st(i.id) === "fix").length;
+  if (!confirm(`Limpar as considerações deste ciclo?\n\nOs ${fx} pedido(s) de ajuste e os comentários do cliente somem, e esses itens voltam pra Pendente. As aprovações ficam. Não dá pra desfazer.`)) return;
+  let senha = "";
+  try { senha = sessionStorage.getItem("painel-pw") || ""; } catch (e) {}
+  if (!senha) senha = prompt("Senha do painel:") || "";
+  if (!senha) return;
+  let r;
+  try {
+    r = await fetch("/api/limpar", { method: "POST", headers: { "Content-Type": "application/json", "x-admin-password": senha }, body: JSON.stringify({ cliente: DATA.slug, ciclo: DATA.ciclo }) });
+  } catch (e) { alert("Sem conexão. Tente de novo."); return; }
+  if (r.status === 401) { try { sessionStorage.removeItem("painel-pw"); } catch (e) {} alert("Senha do painel incorreta."); return; }
+  if (!r.ok) { alert("Não consegui limpar. Tente de novo."); return; }
+  try { sessionStorage.setItem("painel-pw", senha); } catch (e) {}
+  await carregar();
+};
 
 document.addEventListener("click", e => {
   const o = e.target.closest("[data-open]");
