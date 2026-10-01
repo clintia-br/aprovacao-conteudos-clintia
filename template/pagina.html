@@ -250,6 +250,7 @@ img{max-width:100%}
 .sheet h2{font-family:var(--display);font-weight:900;font-size:22px;margin:0;color:var(--title);text-transform:uppercase}
 .sheet p{margin:0;color:var(--ink-2)}
 .sheet .warn{color:var(--wait);font-weight:600}
+.fxw{margin:6px 0 0;font-size:12.5px;font-weight:600;color:var(--fix)}
 .sheet textarea{width:100%;min-height:220px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--paper);color:var(--ink);font:13px/1.5 var(--body);resize:vertical}
 .sheet .acts{display:flex;gap:8px;flex-wrap:wrap}
 .sheet .acts a,.sheet .acts button{flex:1 1 160px;text-align:center;text-decoration:none;border-radius:10px;padding:12px;font-weight:600;border:1.5px solid var(--ink)}
@@ -400,6 +401,10 @@ const KEY = `aprov:${DATA.slug}:${DATA.ciclo}`;
 const AUTH = { cliente: DATA.slug, ciclo: DATA.ciclo, token: DATA.token };
 let dec = {}, envios = 0, online = false;
 try { dec = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { dec = {}; }
+// último texto escrito em cada ajuste: desmarcar e marcar de novo não pode apagar o comentário
+let rasc = {};
+try { rasc = JSON.parse(localStorage.getItem(KEY + ":c") || "{}") || {}; } catch (e) { rasc = {}; }
+const guardar = (id, c) => { if (!c) return; rasc[id] = c; try { localStorage.setItem(KEY + ":c", JSON.stringify(rasc)); } catch (e) {} };
 const saveLocal = () => { try { localStorage.setItem(KEY, JSON.stringify(dec)); } catch (e) {} };
 const timers = {};
 function save(id) {
@@ -608,6 +613,7 @@ function renderView() {
         <div id="fixbox" ${s === "fix" ? "" : "hidden"}>
           <label for="fx">O que precisa mudar?</label>
           <textarea id="fx" rows="3" placeholder="Ex.: no card 3, trocar a palavra X; na legenda, tirar o último parágrafo">${esc(c)}</textarea>
+          <p class="fxw" id="fxw" ${c ? "hidden" : ""}>Escreva o que precisa mudar, senão a equipe não sabe o que ajustar.</p>
         </div>
       </div>
       <nav class="pn"><button type="button" data-nav="-1">Anterior</button><span>${cur + 1} de ${ITEMS.length}</span><button type="button" data-nav="1">Próximo</button></nav>
@@ -618,7 +624,7 @@ function renderView() {
   $("#panel").querySelectorAll("[data-nav]").forEach(b => b.onclick = () => { cur = (cur + +b.dataset.nav + ITEMS.length) % ITEMS.length; slide = 0; renderView(); });
   const fx = $("#fx");
   let tRefresh;
-  if (fx) fx.oninput = () => { dec[it.id] = { s: "fix", c: fx.value }; save(it.id); clearTimeout(tRefresh); tRefresh = setTimeout(renderDynamic, 300); };
+  if (fx) fx.oninput = () => { dec[it.id] = { s: "fix", c: fx.value }; guardar(it.id, fx.value); $("#fxw").hidden = !!fx.value.trim(); save(it.id); clearTimeout(tRefresh); tRefresh = setTimeout(renderDynamic, 300); };
   if (it.imgs && it.imgs.length > 1) {
     $("#al").onclick = () => setSlide(slide - 1);
     $("#ar").onclick = () => setSlide(slide + 1);
@@ -647,15 +653,18 @@ function markSlide() {
 }
 function decide(d) {
   const it = ITEMS[cur];
+  if (dec[it.id] && dec[it.id].c) guardar(it.id, dec[it.id].c);
+  // tocar de novo em "Pedir ajuste" (toque duplo, conferir) não desfaz o ajuste nem apaga o comentário
+  if (d === "fix" && st(it.id) === "fix") { $("#fx").focus(); return; }
   if (st(it.id) === d) delete dec[it.id];
-  else dec[it.id] = { s: d, c: d === "fix" ? ((dec[it.id] && dec[it.id].c) || "") : "" };
+  else dec[it.id] = { s: d, c: d === "fix" ? ((dec[it.id] && dec[it.id].c) || rasc[it.id] || "") : "" };
   save(it.id); renderDynamic();
   // só atualiza os botões: recriar o painel recarregava a mídia e pulava a rolagem
   const s = st(it.id), ok = $('#panel [data-d="ok"]'), fix = $('#panel [data-d="fix"]');
   ok.classList.toggle("on", s === "ok"); ok.setAttribute("aria-pressed", s === "ok"); ok.textContent = s === "ok" ? "✓ Aprovado" : "Aprovar";
   fix.classList.toggle("on", s === "fix"); fix.setAttribute("aria-pressed", s === "fix");
   $("#fixbox").hidden = s !== "fix";
-  if (s === "fix") { $("#fx").value = dec[it.id].c; $("#fx").focus(); }
+  if (s === "fix") { $("#fx").value = dec[it.id].c; $("#fxw").hidden = !!dec[it.id].c.trim(); $("#fx").focus(); }
 }
 
 /* ---------- player de destaques ---------- */
@@ -699,10 +708,12 @@ function openSend() {
   lastFocus = document.activeElement;
   const txt = summary();
   const pend = ITEMS.filter(i => st(i.id) === "wait").length;
+  const semTxt = ITEMS.filter(i => st(i.id) === "fix" && !(dec[i.id].c || "").trim());
   const wa = `https://wa.me/${CONFIG.whatsappAgencia}?text=${encodeURIComponent(txt)}`;
   $("#sheet").innerHTML = `
     <h2>Enviar respostas</h2>
     ${pend ? `<p class="warn">Ainda faltam ${pend} ${pend > 1 ? "itens" : "item"} sem resposta. Você pode enviar assim mesmo.</p>` : `<p>Tudo revisado. Confira o resumo e envie para a equipe.</p>`}
+    ${semTxt.length ? `<p class="warn">${semTxt.length > 1 ? `${semTxt.length} ajustes estão` : "1 ajuste está"} sem comentário (${semTxt.map(label).join(", ")}). Abra e escreva o que precisa mudar antes de enviar.</p>` : ""}
     ${envios >= 2 ? `<p class="warn">Este conteúdo já teve ${envios} rodadas de respostas. Novos ajustes podem entrar como alteração extra.</p>` : ""}
     <textarea readonly id="sum">${esc(txt)}</textarea>
     <p id="send-msg" role="status"></p>

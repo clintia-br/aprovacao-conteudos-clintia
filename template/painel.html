@@ -59,6 +59,16 @@ button:disabled{opacity:.5;cursor:default}
 .gal figcaption span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gal figcaption a,.gal figcaption button{background:none;border:0;padding:0 3px;color:var(--dodger);font-weight:700;cursor:pointer;font-size:13px;text-decoration:none}
 .gal figcaption button{color:var(--fix)}
+/* Ver respostas */
+.resp{display:grid;gap:8px}
+.resp-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--card)}
+.resp-it.fix{border-color:#C73B3B55;background:#C73B3B0a}
+.resp-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.resp-h b{flex:1;min-width:160px}
+.resp-c{margin:6px 0 0;white-space:pre-line;font-size:14px}
+.resp-p{font-size:13px;color:var(--ink-2)}
+.resp-env{border-top:1px solid var(--line);padding-top:10px}
+.resp-env pre{white-space:pre-wrap;font:13px/1.5 inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;margin:6px 0 0;max-height:320px;overflow:auto}
 .gal figure{position:relative}
 .selo{position:absolute;top:5px;left:5px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--dodger);color:#fff}.selo.u{background:var(--ok)}
 .gal .obs{font-size:12px;color:var(--ink-2);margin:-4px 0 8px}
@@ -117,7 +127,7 @@ function render() {
           <td>${c.envios}${c.envios ? `<br><small>${quando(c.ultimoEnvio)}</small>` : ""}</td>
           <td>${quando(c.ultimaAcao)}</td>
           <td>${fotosResumo[c.cliente + "/" + c.ciclo] ? `${fotosResumo[c.cliente + "/" + c.ciclo].n} foto(s)${fotosResumo[c.cliente + "/" + c.ciclo].novas ? ` · <b>${fotosResumo[c.cliente + "/" + c.ciclo].novas} nova(s)</b>` : ""}<br>` : ""}<a href="#" data-fotos="${esc(c.cliente)}|${esc(c.ciclo)}">Subir fotos</a></td>
-          <td><a href="${esc(c.link)}" target="_blank" rel="noopener">Abrir</a> · <a href="#" data-copy="${esc(location.origin + c.link)}">Copiar</a>${c.ajustes ? ` · <a href="#" data-limpar="${esc(c.cliente)}|${esc(c.ciclo)}|${c.ajustes}">Limpar considerações</a>` : ""}${c.origem === "banco" ? ` · <a href="#" data-edit="${esc(c.cliente)}|${esc(c.ciclo)}">Editar</a> · <a href="#" data-del="${esc(c.cliente)}|${esc(c.ciclo)}" style="color:var(--fix)">Remover</a>` : ` · <a href="#" data-edit="${esc(c.cliente)}|${esc(c.ciclo)}|${esc(c.link)}">Editar</a>`}</td>
+          <td><a href="${esc(c.link)}" target="_blank" rel="noopener">Abrir</a> · <a href="#" data-copy="${esc(location.origin + c.link)}">Copiar</a>${c.aprovados || c.ajustes ? ` · <a href="#" data-resp="${esc(c.cliente)}|${esc(c.ciclo)}|${esc(c.link)}">Ver respostas</a>` : ""}${c.ajustes ? ` · <a href="#" data-limpar="${esc(c.cliente)}|${esc(c.ciclo)}|${c.ajustes}">Limpar considerações</a>` : ""}${c.origem === "banco" ? ` · <a href="#" data-edit="${esc(c.cliente)}|${esc(c.ciclo)}">Editar</a> · <a href="#" data-del="${esc(c.cliente)}|${esc(c.ciclo)}" style="color:var(--fix)">Remover</a>` : ` · <a href="#" data-edit="${esc(c.cliente)}|${esc(c.ciclo)}|${esc(c.link)}">Editar</a>`}</td>
         </tr>`;
       }).join("") || `<tr><td colspan="8">Nenhum ciclo neste filtro.</td></tr>`}</tbody>
     </table></div>`;
@@ -130,6 +140,11 @@ function render() {
     e.preventDefault();
     const [cliente, ciclo] = a.dataset.fotos.split("|");
     abrirFotos(cliente, ciclo);
+  });
+  document.querySelectorAll("[data-resp]").forEach(a => a.onclick = e => {
+    e.preventDefault();
+    const [cliente, ciclo, link] = a.dataset.resp.split("|");
+    abrirRespostas(cliente, ciclo, link);
   });
   document.querySelectorAll("[data-copy]").forEach(a => a.onclick = async e => {
     e.preventDefault();
@@ -201,6 +216,62 @@ function destinoAtual() {
   if (v !== "__novo") { const [cliente, ciclo] = v.split("/"); return { cliente, ciclo }; }
   const cliente = slug($("#nd-cli").value), ciclo = slug($("#nd-cic").value);
   return cliente && ciclo ? { cliente, ciclo } : null;
+}
+
+// Ver respostas: o que o cliente marcou e escreveu em cada item (lê da própria página de aprovação)
+async function abrirRespostas(cliente, ciclo, link) {
+  const c = dados.find(x => x.cliente === cliente && x.ciclo === ciclo) || {};
+  const m = document.createElement("div");
+  m.className = "modal";
+  m.innerHTML = `<div class="box" role="dialog" aria-modal="true" aria-labelledby="rt">
+    <div class="mh"><h2 id="rt">Respostas</h2><button class="x" id="r-fechar" aria-label="Fechar">✕</button></div>
+    <div><b>${esc(c.nome || cliente)}</b> · ${esc(c.titulo || ciclo)}</div>
+    <div id="r-corpo"><p class="resp-p">Carregando…</p></div>
+  </div>`;
+  document.body.appendChild(m);
+  document.body.style.overflow = "hidden";
+  const fechar = () => { m.remove(); document.body.style.overflow = ""; document.removeEventListener("keydown", tecla); };
+  const tecla = e => { if (e.key === "Escape") fechar(); };
+  document.addEventListener("keydown", tecla);
+  $("#r-fechar").onclick = fechar;
+  m.onclick = e => { if (e.target === m) fechar(); };
+
+  let itens = [], dec = [], envios = [];
+  try {
+    const token = link.slice(link.lastIndexOf("-") + 1);
+    const [rd, rp] = await Promise.all([
+      fetch(`/api/decisoes?cliente=${encodeURIComponent(cliente)}&ciclo=${encodeURIComponent(ciclo)}&token=${encodeURIComponent(token)}`),
+      fetch(link)
+    ]);
+    if (!rd.ok) throw new Error();
+    dec = (await rd.json()).decisoes || [];
+    const mm = (await rp.text()).match(/^const DATA = (.*);$/m);
+    if (mm) itens = JSON.parse(mm[1]).itens || [];
+    try { const re = await fetch(`/api/envios?cliente=${encodeURIComponent(cliente)}&ciclo=${encodeURIComponent(ciclo)}`, { headers: { "x-admin-password": senha } }); if (re.ok) envios = (await re.json()).envios || []; } catch (err) {}
+  } catch (err) { $("#r-corpo").innerHTML = `<p class="err">Não consegui carregar as respostas. Tente de novo.</p>`; return; }
+
+  const porId = {}; dec.forEach(d => porId[d.item] = d);
+  const nome = it => it.grupo === "feed" ? `Post ${it.num}` : (it.tipo === "bio" ? "Bio" : "Destaque");
+  const lista = itens.length ? itens : dec.map(d => ({ id: d.item, titulo: d.item }));
+  const ordem = { fix: 0, ok: 1 };
+  const comResp = lista.filter(it => porId[it.id]).sort((a, b) => ordem[porId[a.id].status] - ordem[porId[b.id].status]);
+  const pend = lista.filter(it => !porId[it.id]);
+  const LB = { ok: ["t-ok", "Aprovado"], fix: ["t-fix", "Ajuste pedido"] };
+  const txt = [`${c.nome || cliente} · ${c.titulo || ciclo}`, ""];
+  const html = comResp.map(it => {
+    const d = porId[it.id], [cls, rot] = LB[d.status] || ["t-new", d.status];
+    txt.push(`${nome(it)} · ${it.titulo} · ${rot}${d.comentario ? `\n   "${d.comentario}"` : ""}`);
+    return `<div class="resp-it ${d.status}"><div class="resp-h"><small>${esc(nome(it))}</small><b>${esc(it.titulo)}</b><span class="tag ${cls}">${rot}</span></div>${d.comentario ? `<p class="resp-c">“${esc(d.comentario)}”</p>` : ""}</div>`;
+  }).join("");
+  if (pend.length) txt.push("", `Sem resposta ainda: ${pend.map(nome).join(", ")}`);
+  $("#r-corpo").innerHTML = `<div class="resp">${html || `<p class="resp-p">Nenhuma resposta ainda.</p>`}</div>
+    ${pend.length ? `<p class="resp-p">Sem resposta ainda (${pend.length}): ${pend.map(it => esc(nome(it))).join(", ")}</p>` : ""}
+    <div><button type="button" id="r-copiar">Copiar tudo</button></div>
+    ${envios.length ? `<div class="resp-env"><b>O que o cliente enviou</b> <small>(retrato de cada "Enviar respostas", com os comentários daquele momento)</small>${envios.map(e => `<p class="resp-p" style="margin:10px 0 0">Rodada ${e.rodada} · ${quando(e.enviado_em)}</p><pre>${esc(e.resumo)}</pre>`).join("")}</div>` : ""}`;
+  $("#r-copiar").onclick = async () => {
+    try { await navigator.clipboard.writeText(txt.join("\n")); $("#r-copiar").textContent = "Copiado"; }
+    catch (err) { prompt("Copie as respostas:", txt.join("\n")); }
+  };
 }
 
 function abrirFotos(cliente, ciclo) {
